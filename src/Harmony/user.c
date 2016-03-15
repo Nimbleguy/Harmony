@@ -1,0 +1,175 @@
+#include "user.h"
+
+static unsigned int nrand = 1;
+
+void makeMem(struct memHeader* head, struct memFooter* foot, bool avalible){
+	head->magic = 0xCAFEDEAD; //Header checksum.
+	head->magic2 = 0x420FFBAD;
+	head->address = head;
+	head->foot = foot;
+	head->check = ((unsigned int)head ^ (unsigned int)foot) >> 1;
+	head->avalible = avalible;
+
+	foot->magic = 0xCAFEBEEF; //Footer checksum. ALSO CRASHING.
+	foot->magic2 = 0x420FFBAD;
+	foot->head = head;
+	foot->check = head->check;
+	foot->avalible = avalible;
+}
+
+void allocHeap(){
+	//Allocate more memory to heap.
+	mapPage(getPhys(HEAP_START) + heapSize, HEAP_START + heapSize, true, true);
+	struct memFooter* ofoot = (struct memFooter*)(HEAP_START + heapSize - sizeof(struct memFooter));
+	struct memHeader* bhead = ofoot->head;
+	struct memFooter* nfoot = (struct memFooter*)(HEAP_START + heapSize + HEAP_INCR - sizeof(struct memFooter));
+	if(bhead->avalible){
+		makeMem(bhead, nfoot, true);
+		ofoot->magic = 0;
+		ofoot->magic2 = 0;
+	}
+	else{
+		struct memHeader* nhead = (struct memHeader*)(HEAP_START + heapSize);
+		makeMem(nhead, nfoot, true);
+	}
+	heapSize += HEAP_INCR;
+}
+
+void combMem(){
+	//Combine empty spaces.
+	unsigned int i;
+	unsigned int lAvalible = 0;
+	unsigned int* mem = (unsigned int*)HEAP_START;
+        struct memHeader* lastHead = 0;
+	for(i = 0; i < (heapSize / 8); i++){
+		if(mem[i] == 0xCAFEDEAD && mem[i + 1] == 0x420FFBAD){
+			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 8)); //Get header struct.
+			if(head->check == ((unsigned int)head->address ^ (unsigned int)head->foot) >> 1){
+				if(head->avalible){
+					if(lAvalible){
+						struct memHeader* lhead = (struct memHeader*)(HEAP_START + (lAvalible * 8)); //Get last header struct.
+						head->foot->magic = 0; //Reset magic values.
+						head->foot->magic2 = 0;
+						lhead->magic = 0;
+						lhead->magic2 = 0;
+						makeMem(head, lhead->foot, true); //Configure header.
+					}
+					lAvalible = i;
+				}
+				else{
+					lAvalible = 0;
+				}
+				lastHead = head;
+			}
+		}
+	}
+	//Check how far into the heap has been used, and allocate more space if bad things(tm)
+	if(lastHead && (unsigned int)lastHead - (unsigned int)HEAP_START > heapSize - (HEAP_INCR / 4)){
+		//Allocate more space.
+		allocHeap();
+	}
+}
+
+void* malloc(unsigned int size){
+	combMem();
+	unsigned int i;
+	unsigned int ii;
+	unsigned int* mem = (unsigned int*)HEAP_START;
+
+	for(ii = 0; ii < ((heapSize / 8) / 4); ii++){
+		i = ii * 4; //4-byte align.
+		if(mem[i] == 0xCAFEDEAD && mem[i + 1] == 0x420FFBAD){
+			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 8)); //Get header struct.
+			if(head->check == ((unsigned int)head->address ^ (unsigned int)head->foot) >> 1){ //Checksum.
+				if(head->avalible == true){ //Is this free?
+					unsigned int storeSize = ((unsigned int)head->foot - (unsigned int)HEAP_START) - ((unsigned int)head->address - (unsigned int)HEAP_START) - sizeof(struct memHeader);
+					//Check if good size and, if so, allocate memory.
+					if(storeSize > size){
+						if(storeSize - size - sizeof(struct memHeader) - sizeof(struct memFooter) < 0xFF){ //If it's not worth it to split.
+							head->avalible = false;
+							return head->address + sizeof(struct memHeader) + 1; //+1 just in case.
+						}
+						else{ //Crash somewhere here.
+							struct memFooter* foot = head->foot;
+							struct memFooter* newf = (struct memFooter*)((unsigned int)head->address + sizeof(struct memHeader) + size);
+							struct memHeader* newh = (struct memHeader*)((unsigned int)head->address + sizeof(struct memHeader) + size + sizeof(struct memFooter));
+							fbWrite(its((unsigned int)newh), DTCOLOR, BLACK);
+							makeMem(head, newf, false);
+							makeMem(newh, foot, true);
+							return head->address + sizeof(struct memHeader);
+						}
+					}
+					else if(storeSize == size){
+						head->avalible = false;
+						return head->address + sizeof(struct memHeader);
+					}
+				}
+			}
+		}
+	}
+	//Not enough space.
+	allocHeap();
+	return malloc(size);
+}
+
+void free(void* addr){
+	struct memHeader* head = (struct memHeader*)(addr - sizeof(struct memHeader));
+	head->avalible = true;
+	head->foot->avalible = true;
+	combMem();
+}
+
+void setupUsr(){
+	//Memory management setup.
+	heapSize = HEAP_INCR;
+	makeMem((struct memHeader*)HEAP_START, (struct memFooter*)(HEAP_START + heapSize - sizeof(struct memFooter)), true);
+	gdtDesc(5, (unsigned int)malloc(HEAP_INCR / 4) + (HEAP_INCR / 4), HEAP_INCR / 4, 0xF6, 0x4F);
+	ltssb();
+}
+
+void* memcpy(void* out, void* in, unsigned int bytes){
+	unsigned int i;
+	char* b1 = (char*)out;
+	char* b2 = (char*)in;
+
+	for(i = 0; i < bytes; i++){
+		b1[i] = b2[i];
+	}
+
+	return b1;
+}
+
+void* memset(void* str, int c, unsigned int bytes){
+	unsigned int i;
+	unsigned char ch = (unsigned char)c;
+	char* s = (char*)str;
+
+	for(i = 0; i < bytes; i++){
+		s[i] = ch;
+	}
+
+	return s;
+}
+
+void* memmove(void* out, void* in, unsigned int bytes){
+	char* b1 = (char*)out;
+	char* bi = malloc(bytes);
+	char* b2 = (char*)in;
+
+	memcpy(bi, b1, bytes);
+	memcpy(b2, bi, bytes);
+
+	free(bi);
+	return b1;
+}
+
+
+
+int rand(){
+	nrand = nrand * 1103515245 + 12345;
+	return (unsigned int)(nrand / 65536) % 32768;
+}
+
+void srand(unsigned int seed){
+	nrand = seed;
+}

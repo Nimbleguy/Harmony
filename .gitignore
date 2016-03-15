@@ -1,0 +1,14 @@
+# Ignore all except...
+*
+
+!.gitignore
+!Harmony.command
+!src
+!src/*
+!src/*/*
+!LICENSE
+
+#Then remove the annoyances.
+.DS_Store
+*/.DS_Store
+*/*/.DS_Store

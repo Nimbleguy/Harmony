@@ -1,0 +1,6 @@
+default 0
+ 
+title Harmony Alpha
+kernel /boot/Harmony.elf
+
+module /modules/Measure.bin
