@@ -2,7 +2,7 @@
 *
 
 !.gitignore
-!Harmony.command
+!Harmony
 !src
 !src/*
 !src/*/*

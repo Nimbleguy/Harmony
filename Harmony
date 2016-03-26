@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ~/Documents/Harmony
+cd ~/Harmony
 printf "\033c"
 while true; do
 	PS3='What do you want to do? '
@@ -49,9 +49,9 @@ while true; do
 				done
 				;;
 			"Compile")
+				mount image
 				cd src
 				link=""
-				menu=""
 				libgcc="$(i686-elf-gcc $CFLAGS -print-libgcc-file-name)"
 				for dir in *; do
 					echo "Compiling $dir..."
@@ -73,9 +73,6 @@ while true; do
 						elif [ $ext = "ld" ]; then
 							echo "LD file found, no need to compile."
 							link="$dir/$file"
-						elif [ $ext = "lst" ]; then
-							echo "LST file found, no need to compile."
-							menu="$dir/$file"
 						elif [ $ext = "h" ]; then
 							echo "H file found, no need to compile."
 						elif [ $ext = "cfg" ]; then
@@ -96,8 +93,8 @@ while true; do
 						fi
 					elif [[ $type == *"BIN"* ]]; then
 						if i686-elf-ld -T "../../src/$link" "${files[@]}" "$libgcc" -o "../${dir}.bin"; then
-             						echo "Compiled as BIN!"
-           						cp "../${dir}.bin" ../../isofiles/modules
+             						echo "Compiled as BIN! Note: BIN not currently supported."
+           						#cp "../${dir}.bin" ../../image/modules
 						else
                     					echo "Error in compilation!" >&2
             					fi
@@ -107,9 +104,8 @@ while true; do
 					cd ../../src
 				done
 				cd ..
-				cp bin/Harmony.elf isofiles/boot
-				cp "src/$menu" isofiles/boot/grub
-				mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o harmony.iso isofiles
+				cp bin/Harmony.elf image/boot
+				cp src/Harmony/grub.cfg image/boot/grub
 				read -rsp $'Press any key to continue...\n' -n1 key
 				printf "\033c"
 				break
@@ -122,14 +118,15 @@ while true; do
 				break
 				;;
 			"Dump")
-				Compiler/cross/i686-elf/bin/objdump -M intel -S -l -D isofiles/boot/harmony.elf
+				mount image
+				Compiler/cross/i686-elf/bin/objdump -M intel -S -l -D image/boot/harmony.elf
 				read -rsp $'Press any key to continue...\n' -n1 key
                                 printf "\033c"
 				break
 				;;
 			"Self-Edit")
-				nano "Harmony.command"
-				./Harmony.command
+				nano "Harmony"
+				./Harmony
 				exit
 				;;
 			"Quit")
