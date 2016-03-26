@@ -3,7 +3,7 @@ cd ~/Harmony
 printf "\033c"
 while true; do
 	PS3='What do you want to do? '
-	options=("Edit" "Compile" "Run" "Dump" "Self-Edit" "Quit")
+	options=("Edit" "Compile" "Git" "Run" "Dump" "Self-Edit" "Quit")
 	select opt in "${options[@]}"
 	do
 		case $opt in
@@ -47,6 +47,7 @@ while true; do
 							;;
 					esac
 				done
+				break
 				;;
 			"Compile")
 				mount image
@@ -108,6 +109,41 @@ while true; do
 				cp src/Harmony/grub.cfg image/boot/grub
 				read -rsp $'Press any key to continue...\n' -n1 key
 				printf "\033c"
+				break
+				;;
+			"Git")
+				while true; do
+					optiong=("Commit" "Push" "Pull" "Edit Gitignore" "Back")
+					select optg in "${optiong[@]}"
+					do
+						case $optg in
+							"Commit")
+								git add --all
+								git commit
+								read -rsp $'Press any key to continue...\n' -n1 key
+								break
+								;;
+							"Push")
+								git push
+								read -rsp $'Press any key to continue...\n' -n1 key
+								break
+								;;
+							"Pull")
+								git pull
+								read -rsp $'Press any key to continue...\n' -n1 key
+								break
+								;;
+							"Edit Gitignore")
+								nano .gitignore
+								break
+								;;
+							"Back")
+								break 2
+								;;
+						esac
+					done
+					printf "\033c"
+				done
 				break
 				;;
 			"Run")
