@@ -16,6 +16,9 @@ char* its(unsigned int i){
 		itsStore = (char*)kalloc(sizeof(char) * 11);
 	}
 	char* str = itsStore;
+	for(unsigned int tmp = 0; tmp < 11; tmp++){ //Length of buffer.
+		str[tmp] = '0';
+	}
 	str[count] = '\0';
 	while (ci != 0) {
                 switch(ci % 10){
@@ -71,6 +74,9 @@ char* hts(unsigned int i){
                 htsStore = (char*)kalloc(sizeof(char) * 11);
         }
         char* str = htsStore;
+	for(unsigned int tmp = 0; tmp < 11; tmp++){ //Length of buffer.
+                str[tmp] = '0';
+        }
         str[count] = '\0';
 	str[0] = '0';
 	str[1] = 'x';
