@@ -46,7 +46,7 @@ kstack:
 section .text
 
 ; Entry point.
-highloader equ (hloader - KERN_VIRB)
+highloader equ (hloader)
 
 
 ; Enable paging for the first 4 MB, to be replaced later.

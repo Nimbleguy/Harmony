@@ -109,6 +109,7 @@ while true; do
 				cp src/Harmony/grub.cfg image/boot/grub
 				read -rsp $'Press any key to continue...\n' -n1 key
 				printf "\033c"
+				sync
 				break
 				;;
 			"Git")
@@ -150,6 +151,7 @@ while true; do
 				#cp src/Harmony/bochs.cfg bochsrc.txt
 				#bochs -f bochsrc.txt -q
 				qemu-system-i386 -hda Harmony.img -m 1024 -monitor stdio
+				sync
 				read -rsp $'Press any key to continue...\n' -n1 key
 				printf "\033c"
 				break
@@ -157,6 +159,7 @@ while true; do
 			"Dump")
 				mount image
 				Compiler/cross/i686-elf/bin/objdump -M intel -S -l -D image/boot/harmony.elf
+				sync
 				read -rsp $'Press any key to continue...\n' -n1 key
                                 printf "\033c"
 				break
