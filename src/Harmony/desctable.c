@@ -208,9 +208,9 @@ void interruptHandle(struct intState s){
 			else{
 				fbWrite("NONMASK INT ", WHITE, BLUE);
                         }
-			fbWrite(its(inb(0x92)), WHITE, BLUE);
+			fbWrite(hts(inb(0x92)), WHITE, BLUE);
 			fbWrite(" ", WHITE, BLUE);
-			fbWrite(its(inb(0x61)), WHITE, BLUE);
+			fbWrite(hts(inb(0x61)), WHITE, BLUE);
 			break;
                 case 3:
                         fbWrite("BREAKPOINT", WHITE, BLUE);
@@ -258,11 +258,11 @@ void interruptHandle(struct intState s){
 					fbWrite("IDT ", WHITE, BLUE);
                                         break;
 				default:
-					fbWrite(its((s.errorcode & 0x00000006) >> 1), WHITE, BLUE);
+					fbWrite(hts((s.errorcode & 0x00000006) >> 1), WHITE, BLUE);
 					fbWrite(" ", WHITE, BLUE);
 					break;
 			}
-			fbWrite(its((s.errorcode & 0x0000FFF8) >> 3), WHITE, BLUE);
+			fbWrite(hts((s.errorcode & 0x0000FFF8) >> 3), WHITE, BLUE);
                         break;
                 case 14:
                         fbWrite("PAGE FAULT\n", WHITE, BLUE);
@@ -291,7 +291,7 @@ void interruptHandle(struct intState s){
 				fbWrite("INSTR FETCH", WHITE, BLUE);
 			}
 			fbWrite("\n", WHITE, BLUE);
-			fbWrite(its(s.cr2), WHITE, BLUE);
+			fbWrite(hts(s.cr2), WHITE, BLUE);
                         break;
                 case 16:
                         fbWrite("x87 FLOAT PT", WHITE, BLUE);
@@ -312,34 +312,34 @@ void interruptHandle(struct intState s){
                         fbWrite("SECURITY", WHITE, BLUE);
                         break;
 		default:
-			fbWrite(its(i), WHITE, BLUE);
+			fbWrite(hts(i), WHITE, BLUE);
 			break;
 	}
 	fbWrite("\nEAX: ", WHITE, BLUE);
-	fbWrite(its(s.eax), WHITE, BLUE);
+	fbWrite(hts(s.eax), WHITE, BLUE);
 	fbWrite("\nEBX: ", WHITE, BLUE);
-        fbWrite(its(s.ebx), WHITE, BLUE);
+        fbWrite(hts(s.ebx), WHITE, BLUE);
 	fbWrite("\nECX: ", WHITE, BLUE);
-        fbWrite(its(s.ecx), WHITE, BLUE);
+        fbWrite(hts(s.ecx), WHITE, BLUE);
 	fbWrite("\nEDX: ", WHITE, BLUE);
-        fbWrite(its(s.edx), WHITE, BLUE);
+        fbWrite(hts(s.edx), WHITE, BLUE);
 	fbWrite("\nESI: ", WHITE, BLUE);
-        fbWrite(its(s.esi), WHITE, BLUE);
+        fbWrite(hts(s.esi), WHITE, BLUE);
 	fbWrite("\nEDI: ", WHITE, BLUE);
-        fbWrite(its(s.edi), WHITE, BLUE);
+        fbWrite(hts(s.edi), WHITE, BLUE);
 	fbWrite("\nEBP: ", WHITE, BLUE);
-        fbWrite(its(s.ebp), WHITE, BLUE);
+        fbWrite(hts(s.ebp), WHITE, BLUE);
 	fbWrite("\nESP: ", WHITE, BLUE);
-        fbWrite(its(s.esp), WHITE, BLUE);
+        fbWrite(hts(s.esp), WHITE, BLUE);
 
 	fbWrite("\nERR: ", WHITE, BLUE);
-	fbWrite(its(s.errorcode), WHITE, BLUE);
+	fbWrite(hts(s.errorcode), WHITE, BLUE);
         fbWrite("\nEIP: ", WHITE, BLUE);
-        fbWrite(its(s.eip), WHITE, BLUE);
+        fbWrite(hts(s.eip), WHITE, BLUE);
         fbWrite("\nCS: ", WHITE, BLUE);
-        fbWrite(its(s.cs), WHITE, BLUE);
+        fbWrite(hts(s.cs), WHITE, BLUE);
         fbWrite("\nEFLAGS: ", WHITE, BLUE);
-        fbWrite(its(s.eflags), WHITE, BLUE);
+        fbWrite(hts(s.eflags), WHITE, BLUE);
 
 	loopf();
 }

@@ -13,6 +13,7 @@
 #define kalloc_alph(size, phys) genkalloc(size, true, phys) //Aligned & with a physical address.
 
 char* its(unsigned int i);
+char* hts(unsigned int i);
 char stc(unsigned char c);
 void* genkalloc(unsigned int size, bool align, unsigned int* phys);
 

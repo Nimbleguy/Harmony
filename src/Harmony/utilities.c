@@ -1,6 +1,7 @@
 #include "utilities.h"
 
 char* itsStore = 0;
+char* htsStore = 0;
 
 //Int to string
 char* its(unsigned int i){
@@ -12,7 +13,7 @@ char* its(unsigned int i){
 	}
 	ci = i;
 	if(!itsStore){
-		itsStore = (char*)kalloc(sizeof(char) * 9);
+		itsStore = (char*)kalloc(sizeof(char) * 11);
 	}
 	char* str = itsStore;
 	str[count] = '\0';
@@ -55,6 +56,82 @@ char* its(unsigned int i){
         }
 	return str;
 }
+
+//Hex to string.
+//Int to string
+char* hts(unsigned int i){
+        unsigned int ci = i;
+        unsigned short count = 2; // 0xNUM
+        while (ci != 0) {
+                count++;
+                ci /= 0x10;
+        }
+        ci = i;
+        if(!htsStore){
+                htsStore = (char*)kalloc(sizeof(char) * 11);
+        }
+        char* str = htsStore;
+        str[count] = '\0';
+	str[0] = '0';
+	str[1] = 'x';
+        while (ci != 0) {
+                switch(ci % 0x10){
+                        case 0x0:
+                                str[--count] = '0';
+                                break;
+                        case 0x1:
+                                str[--count] = '1';
+                                break;
+                        case 0x2:
+                                str[--count] = '2';
+                                break;
+                        case 0x3:
+                                str[--count] = '3';
+                                break;
+                        case 0x4:
+                                str[--count] = '4';
+                                break;
+                        case 0x5:
+                                str[--count] = '5';
+                                break;
+                        case 0x6:
+                                str[--count] = '6';
+                                break;
+                        case 0x7:
+                                str[--count] = '7';
+                                break;
+                        case 0x8:
+                                str[--count] = '8';
+                                break;
+                        case 0x9:
+                                str[--count] = '9';
+                                break;
+			case 0xA:
+                                str[--count] = 'A';
+                                break;
+			case 0xB:
+                                str[--count] = 'B';
+                                break;
+			case 0xC:
+                                str[--count] = 'C';
+                                break;
+			case 0xD:
+                                str[--count] = 'D';
+                                break;
+			case 0xE:
+                                str[--count] = 'E';
+                                break;
+			case 0xF:
+                                str[--count] = 'F';
+                                break;
+                        default:
+                                break;
+                }
+                ci /= 0x10;
+        }
+        return str;
+}
+
 
 //Scancode to char
 char stc(unsigned char c){
