@@ -147,8 +147,9 @@ while true; do
 				break
 				;;
 			"Run")
-				cp src/Harmony/bochs.cfg bochsrc.txt
-				bochs -f bochsrc.txt -q
+				#cp src/Harmony/bochs.cfg bochsrc.txt
+				#bochs -f bochsrc.txt -q
+				qemu-system-i386 -hda Harmony.img -m 1024 -monitor stdio
 				read -rsp $'Press any key to continue...\n' -n1 key
 				printf "\033c"
 				break
