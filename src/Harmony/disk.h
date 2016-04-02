@@ -1,5 +1,5 @@
-#ifndef FILESYSTEMH
-#define FILESYSTEMH
+#ifndef DISKH
+#define DISKH
 
 #include "common.h"
 #include "io.h"
@@ -33,9 +33,13 @@
 #define S_RDY 0x40
 #define S_BSY 0x80
 
+unsigned int partStart;
+unsigned int partEnd;
+
 //Returns false if cannot access disk. True if successful.
 bool setupHD();
-void setupFS();
 void hdWrite(void* in, unsigned int loc, unsigned int bytes);
+void hdWriteAbs(void* in, unsigned int loc, unsigned int bytes);
 void hdRead(void* out, unsigned int loc, unsigned int bytes);
+void hdReadAbs(void* out, unsigned int loc, unsigned int bytes);
 #endif

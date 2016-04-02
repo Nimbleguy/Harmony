@@ -1,4 +1,4 @@
-#include "filesystem.h"
+#include "disk.h"
 
 unsigned short ATA_IO = 0; //Selected ATA IO port.
 unsigned short ATA_CR = 0; //Selected ATA Control Register.
@@ -34,6 +34,8 @@ void nsDelay(){
 }
 
 bool setupHD(){
+	partStart = 0;
+	partEnd = 0xFFFFFFFF;
 	bool secondary = true;
 	//Detect first working drive.
 	if(inb(ATA1_IO + IO_STATUS) != 0xFF){
@@ -135,8 +137,18 @@ bool setupHD(){
 }
 
 void hdWrite(void* in, unsigned int loc, unsigned int bytes){
+        unsigned int lma = (loc + partStart) & 0x0FFFFFFF;
+        if(lma > partEnd || lma < partStart){
+                fbWrite("Attempted to set out of bounds LMA!\n", RED, BLACK);
+                return;
+        }
+        hdWriteAbs(in, lma, bytes);
+}
+
+void hdWriteAbs(void* in, unsigned int loc, unsigned int bytes){
 	unsigned int sectors = (bytes + 512 - 1) / 512; //Round up: (A + B - 1)/B
 	unsigned int lma = loc & 0x0FFFFFFF;
+
 	outb(ATA_IO, (0xE0 + SELOFF) | (lma >> 24)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LGA.
 	outb(ATA_IO + IO_SECCNT, sectors); //Output amount of sectors to read.
 	outb(ATA_IO + IO_LGAl, lma & 0xFF); //Output lower 8 bits of LMA.
@@ -164,8 +176,18 @@ void hdWrite(void* in, unsigned int loc, unsigned int bytes){
 }
 
 void hdRead(void* out, unsigned int loc, unsigned int bytes){
+	unsigned int lma = (loc + partStart) & 0x0FFFFFFF;
+	if(lma > partEnd || lma < partStart){
+		fbWrite("Attempted to access out of bounds LMA!\n", RED, BLACK);
+                return;
+        }
+	hdReadAbs(out, lma, bytes);
+}
+
+void hdReadAbs(void* out, unsigned int loc, unsigned int bytes){
 	unsigned int sectors = (bytes + 512 - 1) / 512; //Round up: (A + B - 1)/B
 	unsigned int lma = loc & 0x0FFFFFFF;
+
 	outb(ATA_IO, (0xE0 + SELOFF) | (lma >> 24)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LGA.
 	outb(ATA_IO + IO_SECCNT, sectors); //Output amount of sectors to read.
 	outb(ATA_IO + IO_LGAl, lma & 0xFF); //Output lower 8 bits of LMA.
@@ -188,8 +210,4 @@ void hdRead(void* out, unsigned int loc, unsigned int bytes){
 		}
 		nsDelay();
 	}
-}
-
-void setupFS(){
-
 }

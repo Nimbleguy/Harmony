@@ -5,7 +5,7 @@ section .mbheader
 align 4
 	; Multiboot Magic
 	MAGIC equ 0x1BADB002 ; One bad boot?
-	FLAGS equ 0x0
+	FLAGS equ 0x1
 	CHECKSUM equ -(MAGIC + FLAGS)
 	dd MAGIC
 	dd FLAGS
@@ -73,7 +73,7 @@ loader:
 	; Disable identity mapping, no longer needed.
 	mov dword [tempPgDir], 0
 	invlpg [0]
-	
+
 	; Set stack pointer
 	mov esp, kstack + STACKSIZE
 	; Set heap info for kernel.

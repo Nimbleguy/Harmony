@@ -4,12 +4,15 @@
 extern "C" /* Use C linkage for kernel_main. */
 #endif
 
-void kernel_main(void* heap) {
+void kernel_main(struct mbInfo* mb, void* heap) {
 	fbWrite("Bootloading complete\n", DTCOLOR, BLACK);
 
 	//Do the heap.
 	frHeap = (unsigned int)heap;
 	fbWrite(its(frHeap), DTCOLOR, BLACK);
+
+	//Do the boot.
+	multiboot = mb;
 
 	fbWrite("\nLoading GDT...\n", DTCOLOR, BLACK);
 	//Initialize the VERY TRUELY EXTREMELY IMPORTANT GDT!
