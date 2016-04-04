@@ -41,7 +41,7 @@ void combMem(){
 	unsigned int lAvalible = 0;
 	unsigned int* mem = (unsigned int*)HEAP_START;
         struct memHeader* lastHead = 0;
-	for(i = 0; i < (heapSize / 8); i++){
+	for(i = 0; i < (heapSize / 8); i = i + 8){
 		if(mem[i] == 0xCAFEDEAD && mem[i + 1] == 0x420FFBAD){
 			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 8)); //Get header struct.
 			if(head->check == ((unsigned int)head->address ^ (unsigned int)head->foot) >> 1){
@@ -70,14 +70,16 @@ void combMem(){
 	}
 }
 
-void* malloc(unsigned int size){
+void* malloc(unsigned int s){
 	combMem();
 	unsigned int i;
-	unsigned int ii;
 	unsigned int* mem = (unsigned int*)HEAP_START;
 
-	for(ii = 0; ii < ((heapSize / 8) / 4); ii++){
-		i = ii * 4; //4-byte align.
+	//Align
+	unsigned int size = s + (4 - (s % 4));
+
+	//Allocate
+	for(i = 0; i < (heapSize / 8); i = i + 8){
 		if(mem[i] == 0xCAFEDEAD && mem[i + 1] == 0x420FFBAD){
 			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 8)); //Get header struct.
 			if(head->check == ((unsigned int)head->address ^ (unsigned int)head->foot) >> 1){ //Checksum.
@@ -87,9 +89,9 @@ void* malloc(unsigned int size){
 					if(storeSize > size){
 						if(storeSize - size - sizeof(struct memHeader) - sizeof(struct memFooter) < 0xFF){ //If it's not worth it to split.
 							head->avalible = false;
-							return head->address + sizeof(struct memHeader) + 1; //+1 just in case.
+							return head->address + sizeof(struct memHeader);
 						}
-						else{ //Crash somewhere here.
+						else{
 							struct memFooter* foot = head->foot;
 							struct memFooter* newf = (struct memFooter*)((unsigned int)head->address + sizeof(struct memHeader) + size);
 							struct memHeader* newh = (struct memHeader*)((unsigned int)head->address + sizeof(struct memHeader) + size + sizeof(struct memFooter));

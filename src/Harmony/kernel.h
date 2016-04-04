@@ -8,7 +8,7 @@
 #include "paging.h"
 #include "io.h"
 #include "user.h"
-#include "fat.h"
+#include "ext2.h"
 #include "multiboot.h"
 
 void kernel_main();

@@ -57,6 +57,7 @@ while true; do
 				for dir in *; do
 					echo "Compiling $dir..."
 					cd $dir
+					rm -rf "../../bin/$dir"
 					mkdir "../../bin/$dir"
 					for file in *; do
 						echo "Compiling $file..."
