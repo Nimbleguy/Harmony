@@ -1,6 +1,13 @@
 #ifndef MULTIBOOTH
 #define MULTIBOOTH
 
+struct mbBoot{
+	unsigned char biosDisk;
+	unsigned char part1;
+	unsigned char part2;
+	unsigned char part3;
+}__attribute__((packed));
+
 struct mbInfo{
 	unsigned int flags;
 	unsigned int memLow;
@@ -13,13 +20,6 @@ struct mbInfo{
 	unsigned int mmapLength;
 	unsigned int  mmapAddr;
 	//Add more if needed.
-}__attribute__((packed));
-
-struct mbBoot{
-	unsigned char biosDisk;
-	unsigned char part1;
-	unsigned char part2;
-	unsigned char part3;
 }__attribute__((packed));
 
 struct mbInfo* multiboot;

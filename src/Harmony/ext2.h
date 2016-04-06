@@ -6,7 +6,26 @@
 #include "multiboot.h"
 #include "utilities.h"
 
-struct superblockExt;
+struct superblockExt{ //Only exists if superblock->verMajor >= 1.
+	unsigned int nosuInode; //First non-reserved inode. 11 when nonexistant.
+	unsigned short inodeSize; //Byte size of inodes. 128 when nonexistant.
+	unsigned short blockGroup; //Block group the superblock is part of, if a backup copy.
+	unsigned int optional; //Optional features present. 0x1=prealloc, 0x2=afs inodes, 0x4=journaled, 0x8=xattr, 0x10=resizable, 0x20=hashindex.
+	unsigned int required; //Required features present. 0x1=compression, 0x2=typed dirs, 0x4=journal replay, 0x8=jounalUsed.
+	unsigned int rofeat; //Readonly features present. 0x1=sparse superblock & tables, 0x2=64-bit, 0x4=binary tree.
+	unsigned char fsId[16]; //Filesystem ID.
+	unsigned char volId[16]; //Volume name, terminated with \0.
+	unsigned char path[64]; //Path volume was last mounted to, terminated with \0.
+	unsigned int compress; //What compression algorithims used if superblockExt->required & 0x1.
+	unsigned char preallocFile; //Blocks to preallocate for files.
+	unsigned char preallocDir; //Blocks to preallocate for directories.
+	unsigned short reserved1; //Reserved.
+	unsigned char journalId[16]; //Same as superblockExt->fsId.
+	unsigned int journalInode; //Inode location of the journal.
+	unsigned int journalDevice; //Block device of the journal.
+	unsigned int orphanInode; //Head of the orphan inode list.
+	unsigned char reserved2[788]; //Reserved.
+}__attribute__((packed));
 
 struct superblock{
 	unsigned int inodes;
@@ -37,28 +56,7 @@ struct superblock{
 	struct superblockExt ext; //Extension of the superblock. See struct superblockExt.
 }__attribute__((packed));
 
-struct superblockExt{ //Only exists if superblock->verMajor >= 1.
-	unsigned int nosuInode; //First non-reserved inode. 11 when nonexistant.
-	unsigned short inodeSize; //Byte size of inodes. 128 when nonexistant.
-	unsigned short blockGroup; //Block group the superblock is part of, if a backup copy.
-	unsigned int optional; //Optional features present. 0x1=prealloc, 0x2=afs inodes, 0x4=journaled, 0x8=xattr, 0x10=resizable, 0x20=hashindex.
-	unsigned int required; //Required features present. 0x1=compression, 0x2=typed dirs, 0x4=journal replay, 0x8=jounalUsed.
-	unsigned int rofeat; //Readonly features present. 0x1=sparse superblock & tables, 0x2=64-bit, 0x4=binary tree.
-	unsigned char fsId[16]; //Filesystem ID.
-	unsigned char volId[16]; //Volume name, terminated with \0.
-	unsigned char path[64]; //Path volume was last mounted to, terminated with \0.
-	unsigned int compress; //What compression algorithims used if superblockExt->required & 0x1.
-	unsigned char preallocFile; //Blocks to preallocate for files.
-	unsigned char preallocDir; //Blocks to preallocate for directories.
-	unsigned short reserved1; //Reserved.
-	unsigned char journalId[16]; //Same as superblockExt->fsId.
-	unsigned int journalInode; //Inode location of the journal.
-	unsigned int journalDevice; //Block device of the journal.
-	unsigned int orphanInode; //Head of the orphan inode list.
-	unsigned char reserved2[788]; //Reserved.
-}__attribute__((packed));
-
-struct groupDesc{
+struct block{
 	unsigned int blockAddr; //Block address of the block usage bitmap.
 	unsigned int inodeAddr; //Block address of the inode usage bitmap.
 	unsigned int inodeTable; //Block address of inode table.
@@ -66,6 +64,30 @@ struct groupDesc{
 	unsigned short unallocInodes; //Unallocated inodes in group.
 	unsigned short dirs; //Number of directories.
 	unsigned char reserved[14]; //Reserved.
+}__attribute__((packed));
+
+struct inode{
+	unsigned short perms; //inode->perms & 0xF000 is type, everything else is permissions.
+	unsigned short uid; //Owner user id.
+	unsigned int lowSize; //Lower 32 bits of filesize.
+	unsigned int timeAccess; //Last access POSIX time.
+	unsigned int timeCreate; //Creation POSIX time.
+	unsigned int timeModify; //Last modification POSIX time.
+	unsigned int timeDelete; //POSIX time of deletion.
+	unsigned short gid; //Owner group id.
+	unsigned short dirs; //Amount of directories, or hard links, leading to the inode. When 0, it's unallocated.
+	unsigned int sectors; //Disk sectors, not blocks, used. Does not include parents or this structure itself.
+	unsigned int flags; //Just look up inode flags for ext2.
+	unsigned int os1; //OS specific value #1.
+	unsigned int dBlock[12]; //12 block pointers to where data is stored.
+	unsigned int iBlock1; //Block pointer to 12 dBlocks.
+	unsigned int iBlock2; //Block pointer to as many iBlock1s as possible.
+	unsigned int iBlock3; //Block pointer to as many iBlock2s as possible.
+	unsigned int gen; //Generation number.
+	unsigned int xattr; //In superblock->verMajor >= 1, extended attribute block location. If not, then reserved.
+	unsigned int acl; //If superblock->verMajor >= 1, (If file then upper 32 bits of size, if directory then directory xattr), if not then reserved.
+	unsigned int fragment; //Block address of fragment.
+	unsigned int os2; //OS specific value #2.
 }__attribute__((packed));
 
 //True if initialized successfully.
