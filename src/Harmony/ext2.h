@@ -6,6 +6,27 @@
 #include "multiboot.h"
 #include "utilities.h"
 
+//Master Boot Record data.
+struct mbrEntry{
+	unsigned char bootable;
+	unsigned char startHead;
+	unsigned char startSect : 6;
+	unsigned short startCyl : 10;
+	unsigned char id;
+	unsigned char endHead;
+	unsigned char endSect : 6;
+	unsigned short endCyl : 10;
+	unsigned int lba;
+	unsigned int sectors;
+}__attribute__((packed));
+
+struct mbr{
+	unsigned char bootstrap[446];
+	struct mbrEntry entries[4];
+	unsigned char signature[2]; //0x55 0xAA
+}__attribute__((packed));
+
+//EXT2 data.
 struct superblockExt{ //Only exists if superblock->verMajor >= 1.
 	unsigned int nosuInode; //First non-reserved inode. 11 when nonexistant.
 	unsigned short inodeSize; //Byte size of inodes. 128 when nonexistant.
