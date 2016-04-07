@@ -9,8 +9,8 @@
 #define FBHIGH 14
 #define FBLOW 15
 
-#define MAXCOLUMN 79
-#define MAXROW 24
+#define MAXCOLUMN (80 - 1)
+#define MAXROW (25 - 1)
 
 #define BLACK 0
 #define BLUE 1
@@ -30,7 +30,17 @@
 #define WHITE 15
 #define DTCOLOR GREEN
 
+struct fbText{
+	char c;
+	unsigned char forecolor;
+	unsigned char backcolor;
+};
+
 void fbWrite(char* s, unsigned char fg, unsigned char bg);
+void fbSync();
+void fbChar(char c, unsigned char fg, unsigned char bg);
+void fbScroll();
 void fbClear(unsigned char color);
+void fbMove(unsigned int r, unsigned int c);
 
 #endif
