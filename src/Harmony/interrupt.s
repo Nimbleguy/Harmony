@@ -38,7 +38,7 @@ interruptc:
 	popad
 
 	; Add to stack pointer to compensate for push error code & stuff
-	add esp, 12
+	add esp, 8
 
 	; Return to interrupted code.
 	iret
