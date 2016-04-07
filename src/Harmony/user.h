@@ -28,6 +28,9 @@ struct memFooter{
 }__attribute__((packed));
 
 unsigned int heapSize;
+unsigned int memSigH;
+unsigned int memSigF;
+unsigned int memSig;
 
 void setupUsr();
 void* malloc(unsigned int size);

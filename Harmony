@@ -159,7 +159,7 @@ while true; do
 				;;
 			"Dump")
 				mount image
-				Compiler/cross/i686-elf/bin/objdump -M intel -S -l -D image/boot/harmony.elf
+				i686-elf-objdump -M intel -S -l -D image/boot/harmony.elf
 				sync
 				read -rsp $'Press any key to continue...\n' -n1 key
                                 printf "\033c"

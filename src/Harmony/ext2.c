@@ -18,13 +18,19 @@ bool setupFS(){
 		loopf(); //temp.
 	}
 
-	struct mbrEntry = (mbr->entries)[part];
-	partStart = mbrEntry.lba;
-	partEnd = partStart + mbrEntry.sectors;
+	struct mbrEntry entry = (masterBoot->entries)[part];
+	partStart = entry.lba;
+	partEnd = partStart + entry.sectors;
 
-	struct superblock* sb = (struct superblock*)malloc(struct superblock));
+	struct superblock* sb = (struct superblock*)malloc(sizeof(struct superblock));
 	hdRead(sb, 1, sizeof(struct superblock)); //Read the superblock from offset 1024 bytes, which is 1 in LBA.
 
+	if(!(sb->signature == 0xEF53)){
+		fbWrite("Invalid Superblock!\n", RED, BLACK);
+		free(masterBoot);
+		free(sb);
+		return false;
+	}
 
 	free(masterBoot);
 	free(sb);

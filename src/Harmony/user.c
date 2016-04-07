@@ -1,17 +1,17 @@
 #include "user.h"
 
-static unsigned int nrand = 1;
+static unsigned int nrand[4] = {0xAAAAAAAA, 0xCAFE, 0x4, 0x101};
 
 void makeMem(struct memHeader* head, struct memFooter* foot, bool avalible){
-	head->magic = 0xCAFEDEAD; //Header checksum.
-	head->magic2 = 0x420FFBAD;
+	head->magic = memSigH; //Header checksum.
+	head->magic2 = memSig;
 	head->address = head;
 	head->foot = foot;
 	head->check = ((unsigned int)head ^ (unsigned int)foot) >> 1;
 	head->avalible = avalible;
 
-	foot->magic = 0xCAFEBEEF; //Footer checksum. ALSO CRASHING.
-	foot->magic2 = 0x420FFBAD;
+	foot->magic = memSigF; //Footer checksum. ALSO CRASHING.
+	foot->magic2 = memSig;
 	foot->head = head;
 	foot->check = head->check;
 	foot->avalible = avalible;
@@ -42,7 +42,7 @@ void combMem(){
 	unsigned int* mem = (unsigned int*)HEAP_START;
         struct memHeader* lastHead = 0;
 	for(i = 0; i < (heapSize / 8); i = i + 8){
-		if(mem[i] == 0xCAFEDEAD && mem[i + 1] == 0x420FFBAD){
+		if(mem[i] == memSigH && mem[i + 1] == memSig){
 			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 8)); //Get header struct.
 			if(head->check == ((unsigned int)head->address ^ (unsigned int)head->foot) >> 1){
 				if(head->avalible){
@@ -80,7 +80,7 @@ void* malloc(unsigned int s){
 
 	//Allocate
 	for(i = 0; i < (heapSize / 8); i = i + 8){
-		if(mem[i] == 0xCAFEDEAD && mem[i + 1] == 0x420FFBAD){
+		if(mem[i] == memSigH && mem[i + 1] == memSig){
 			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 8)); //Get header struct.
 			if(head->check == ((unsigned int)head->address ^ (unsigned int)head->foot) >> 1){ //Checksum.
 				if(head->avalible == true){ //Is this free?
@@ -122,8 +122,15 @@ void free(void* addr){
 }
 
 void setupUsr(){
+	//Randomize RNG.
+	unsigned int random = rand();
+	for(; (random % 20) == 10; random = rand());
+
 	//Memory management setup.
 	heapSize = HEAP_INCR;
+	memSigH = rand();
+	memSigF = rand();
+	memSig = rand();
 	makeMem((struct memHeader*)HEAP_START, (struct memFooter*)(HEAP_START + heapSize - sizeof(struct memFooter)), true);
 	gdtDesc(5, (unsigned int)malloc(HEAP_INCR / 4) + (HEAP_INCR / 4), HEAP_INCR / 4, 0xF6, 0x4F);
 	ltssb();
@@ -168,10 +175,14 @@ void* memmove(void* out, void* in, unsigned int bytes){
 
 
 int rand(){
-	nrand = nrand * 1103515245 + 12345;
-	return (unsigned int)(nrand / 65536) % 32768;
+	unsigned int n = nrand[0] + nrand[1] + nrand[2] + nrand[3];
+	srand(n);
+	return n;
 }
 
 void srand(unsigned int seed){
-	nrand = seed;
+	nrand[0] = nrand[1];
+	nrand[1] = nrand[2];
+	nrand[2] = nrand[3];
+	nrand[3] = seed;
 }

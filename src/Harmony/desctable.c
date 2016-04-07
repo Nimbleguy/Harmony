@@ -190,7 +190,6 @@ void interruptHandle(struct intState s){
 		return;
 	}
 
-	fbClear(BLUE);
 	fbWrite("INTERRUPT\n", WHITE, BLUE);
 	switch(i){
 		case 0:
