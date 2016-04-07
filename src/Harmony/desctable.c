@@ -314,30 +314,30 @@ void interruptHandle(struct intState s){
 			fbWrite(hts(i), WHITE, BLUE);
 			break;
 	}
-	fbWrite("\nEAX: ", WHITE, BLUE);
+	fbWrite("\tEAX: ", WHITE, BLUE);
 	fbWrite(hts(s.eax), WHITE, BLUE);
-	fbWrite("\nEBX: ", WHITE, BLUE);
+	fbWrite("\tEBX: ", WHITE, BLUE);
         fbWrite(hts(s.ebx), WHITE, BLUE);
-	fbWrite("\nECX: ", WHITE, BLUE);
+	fbWrite("\tECX: ", WHITE, BLUE);
         fbWrite(hts(s.ecx), WHITE, BLUE);
-	fbWrite("\nEDX: ", WHITE, BLUE);
+	fbWrite("\tEDX: ", WHITE, BLUE);
         fbWrite(hts(s.edx), WHITE, BLUE);
-	fbWrite("\nESI: ", WHITE, BLUE);
+	fbWrite("\tESI: ", WHITE, BLUE);
         fbWrite(hts(s.esi), WHITE, BLUE);
-	fbWrite("\nEDI: ", WHITE, BLUE);
+	fbWrite("\tEDI: ", WHITE, BLUE);
         fbWrite(hts(s.edi), WHITE, BLUE);
-	fbWrite("\nEBP: ", WHITE, BLUE);
+	fbWrite("\tEBP: ", WHITE, BLUE);
         fbWrite(hts(s.ebp), WHITE, BLUE);
-	fbWrite("\nESP: ", WHITE, BLUE);
+	fbWrite("\tESP: ", WHITE, BLUE);
         fbWrite(hts(s.esp), WHITE, BLUE);
 
-	fbWrite("\nERR: ", WHITE, BLUE);
+	fbWrite("\tERR: ", WHITE, BLUE);
 	fbWrite(hts(s.errorcode), WHITE, BLUE);
-        fbWrite("\nEIP: ", WHITE, BLUE);
+        fbWrite("\tEIP: ", WHITE, BLUE);
         fbWrite(hts(s.eip), WHITE, BLUE);
-        fbWrite("\nCS: ", WHITE, BLUE);
+        fbWrite("\tCS: ", WHITE, BLUE);
         fbWrite(hts(s.cs), WHITE, BLUE);
-        fbWrite("\nEFLAGS: ", WHITE, BLUE);
+        fbWrite("\tEFLAGS: ", WHITE, BLUE);
         fbWrite(hts(s.eflags), WHITE, BLUE);
 
 	loopf();

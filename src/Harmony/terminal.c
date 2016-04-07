@@ -25,6 +25,9 @@ void moveCursor(unsigned short pos){
 
 void fbWrite(char* s, unsigned char fg, unsigned char bg){
 	for(unsigned int i = 0; s[i] != '\0'; i++){
+		if(s[i] == '\t'){
+			fbWrite("     ", fg, bg);
+		}
 		if(s[i] == '\n'){
 			if(row == MAXROW){
 				fbClear(lccolor);
