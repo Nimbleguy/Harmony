@@ -25,35 +25,17 @@ interrupt%1:
 ; Common interrupt handler.
 interruptc:
 
-	; Save registers.
+	; Save registers
+	pushad
+	mov cr2, eax
 	push eax
-	mov eax, cr2
-	push eax
-	add esp, 4
-	pop eax
-	sub esp, 4
-
-	push eax
-	push ebx
-	push ecx
-	push edx
-	push esi
-	push edi
-	push ebp
-	push esp
 
 	; Call the C function for this stuff.
 	call interruptHandle
 
 	; Load registers.
-	pop esp
-	pop ebp
-	pop edi
-	pop esi
-	pop edx
-	pop ecx
-	pop ebx
 	pop eax
+	popad
 
 	; Add to stack pointer to compensate for push error code & stuff
 	add esp, 12

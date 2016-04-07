@@ -125,7 +125,7 @@ void enablePaging(){
 void* getPhys(void* virt){
 	if(pagEnabled){
 		unsigned int pdIndex = (unsigned int)virt >> 22;
-		unsigned int ptIndex = (unsigned int)virt >> 12 & 0x3FF;
+		unsigned int ptIndex = (unsigned int)virt >> 12 & 0x03FF;
 		//Use recursive map to get phys address.
 		unsigned int* pt = (unsigned int*)0xFFC00000 + (0x400 * pdIndex);
 		return (void*)((pt[ptIndex] & ~0xFFF) + ((unsigned int)virt & 0xFFF));

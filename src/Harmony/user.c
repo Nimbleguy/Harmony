@@ -10,7 +10,7 @@ void makeMem(struct memHeader* head, struct memFooter* foot, bool avalible){
 	head->check = ((unsigned int)head ^ (unsigned int)foot) >> 1;
 	head->avalible = avalible;
 
-	foot->magic = memSigF; //Footer checksum. ALSO CRASHING.
+	foot->magic = memSigF; //Footer checksum.
 	foot->magic2 = memSig;
 	foot->head = head;
 	foot->check = head->check;
