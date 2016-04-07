@@ -200,9 +200,9 @@ void interruptHandle(struct intState s){
                         break;
                 case 2:
 			if(inb(0x61) == 6 || inb(0x61) == 7){
-				fbWrite("                 PEBKAC ERROR\n", WHITE, BLUE);
-				fbWrite("                 WHATEVER YOU DID, YOU SHOULD NOT HAVE DONE.\n", WHITE, BLUE);
-				fbWrite("                 PLEASE REPLACE COMPUTER\n", WHITE, BLUE);
+				fbWrite("\t\tPEBKAC ERROR\n", WHITE, BLUE);
+				fbWrite("\t\tWHATEVER YOU DID, YOU SHOULD NOT HAVE DONE.\n", WHITE, BLUE);
+				fbWrite("\t\tPLEASE REPLACE COMPUTER\n", WHITE, BLUE);
 			}
 			else{
 				fbWrite("NONMASK INT ", WHITE, BLUE);

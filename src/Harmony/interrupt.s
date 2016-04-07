@@ -24,8 +24,7 @@ interrupt%1:
 
 ; Common interrupt handler.
 interruptc:
-	cli
-	
+
 	; Save registers.
 	push eax
 	mov eax, cr2
@@ -42,10 +41,10 @@ interruptc:
 	push edi
 	push ebp
 	push esp
-	
+
 	; Call the C function for this stuff.
 	call interruptHandle
-	
+
 	; Load registers.
 	pop esp
 	pop ebp
@@ -58,9 +57,7 @@ interruptc:
 
 	; Add to stack pointer to compensate for push error code & stuff
 	add esp, 12
-	
-	sti
-	
+
 	; Return to interrupted code.
 	iret
 

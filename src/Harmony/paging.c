@@ -114,7 +114,7 @@ void enablePaging(){
 	//Map heap.
 	mkPgDir(dstart + 1, true, true, true, false, false, false, true, 0, 0x400000);
 	//Recursive page directory.
-	mkPgDir(1024 - 1, true, true, true, false, false, false, false, 0, (unsigned int)pgDir);
+	mkPgDir(1024 - 1, true, true, true, false, false, false, false, 0, getPhysInt(pgDir));
 
 	//Enable paging.
 	lpagb(getPhysInt(pgDir));

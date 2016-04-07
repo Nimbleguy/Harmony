@@ -42,15 +42,15 @@ struct idtEntry{
 }__attribute__((packed));
 
 struct intState {
-	unsigned int cr2;
-        unsigned int eax;
-        unsigned int ebx;
-        unsigned int ecx;
-        unsigned int edx;
-        unsigned int esi;
-        unsigned int edi;
+	unsigned int esp;
         unsigned int ebp;
-        unsigned int esp;
+        unsigned int edi;
+        unsigned int esi;
+        unsigned int edx;
+        unsigned int ecx;
+        unsigned int ebx;
+        unsigned int eax;
+        unsigned int cr2;
 	unsigned int i;
         unsigned int errorcode;
         unsigned int eip;
