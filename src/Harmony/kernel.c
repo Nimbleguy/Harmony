@@ -17,32 +17,30 @@ void kernel_main(struct mbInfo* mb, void* heap) {
 	fbWrite("\nLoading GDT...\n", DTCOLOR, BLACK);
 	//Initialize the VERY TRUELY EXTREMELY IMPORTANT GDT!
 	makeGDT();
-	fbWrite("GDT Loaded.\n", DTCOLOR, BLACK);
 
 	fbWrite("Loading IDT...\n", DTCOLOR, BLACK);
 	//We need to be able to crash.
 	makeIDT();
-	fbWrite("IDT Loaded.\n", DTCOLOR, BLACK);
 
 	fbWrite("Loading Paging...\n", DTCOLOR, BLACK);
 	//Now for paging, which is GDT 2: Electric Boogaloo.
 	enablePaging();
-	fbWrite("Paging Loaded.\n", DTCOLOR, BLACK);
 
 	fbWrite("Loading Libraries of the Third Ring...\n", DTCOLOR, BLACK);
 	//User junk.
 	setupUsr();
-	fbWrite("\nThird Libraries Loaded.\n", DTCOLOR, BLACK);
 
 	fbWrite("Loading Hard Drive...\n", DTCOLOR, BLACK);
         //HDD
-        setupHD();
-        fbWrite("Hard Drive Loaded.\n", DTCOLOR, BLACK);
+        if(!setupHD()){
+		loopf();
+	}
 
 	fbWrite("Loading Filesystem...\n", DTCOLOR, BLACK);
         //FS
-        setupFS();
-        fbWrite("Filesystem Loaded.\n", DTCOLOR, BLACK);
+        if(!setupFS()){
+		loopf();
+	}
 
 	// Make sure screan is clear from junk.
 	fbClear(BLACK);
