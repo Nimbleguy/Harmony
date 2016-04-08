@@ -162,6 +162,8 @@ char stc(unsigned char c){
                         return keyShift ? '(' : '9';
                 case 0x0B:
                         return keyShift ? ')' : '0';
+		case 0x0F:
+			return '\t';
 		case 0x10:
 			return keyShift ? 'Q' : 'q';
 		case 0x11:
