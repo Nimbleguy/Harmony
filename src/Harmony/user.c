@@ -41,13 +41,13 @@ void combMem(){
 	unsigned int lAvalible = 0;
 	unsigned int* mem = (unsigned int*)HEAP_START;
         struct memHeader* lastHead = 0;
-	for(i = 0; i < (heapSize / 8); i = i + 8){
+	for(i = 0; i < (heapSize / 4); i++){
 		if(mem[i] == memSigH && mem[i + 1] == memSig){
-			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 8)); //Get header struct.
+			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 4)); //Get header struct.
 			if(head->check == ((unsigned int)head->address ^ (unsigned int)head->foot) >> 1){
 				if(head->avalible){
 					if(lAvalible){
-						struct memHeader* lhead = (struct memHeader*)(HEAP_START + (lAvalible * 8)); //Get last header struct.
+						struct memHeader* lhead = (struct memHeader*)(HEAP_START + (lAvalible * 4)); //Get last header struct.
 						head->foot->magic = 0; //Reset magic values.
 						head->foot->magic2 = 0;
 						lhead->magic = 0;
@@ -75,13 +75,13 @@ void* malloc(unsigned int s){
 	unsigned int i;
 	unsigned int* mem = (unsigned int*)HEAP_START;
 
-	//Align
-	unsigned int size = s + (4 - (s % 4));
+	//Old junk.
+	unsigned int size = s;
 
 	//Allocate
-	for(i = 0; i < (heapSize / 8); i = i + 8){
+	for(i = 0; i < (heapSize / 4); i++){
 		if(mem[i] == memSigH && mem[i + 1] == memSig){
-			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 8)); //Get header struct.
+			struct memHeader* head = (struct memHeader*)(HEAP_START + (i * 4)); //Get header struct.
 			if(head->check == ((unsigned int)head->address ^ (unsigned int)head->foot) >> 1){ //Checksum.
 				if(head->avalible == true){ //Is this free?
 					unsigned int storeSize = ((unsigned int)head->foot - (unsigned int)HEAP_START) - ((unsigned int)head->address - (unsigned int)HEAP_START) - sizeof(struct memHeader);
@@ -93,9 +93,10 @@ void* malloc(unsigned int s){
 						}
 						else{
 							struct memFooter* foot = head->foot;
-							struct memFooter* newf = (struct memFooter*)((unsigned int)head->address + sizeof(struct memHeader) + size);
-							struct memHeader* newh = (struct memHeader*)((unsigned int)head->address + sizeof(struct memHeader) + size + sizeof(struct memFooter));
-							fbWrite(its((unsigned int)newh), DTCOLOR, BLACK);
+							unsigned int newftmp = ((unsigned int)(head->address) + sizeof(struct memHeader) + size);
+							unsigned int newhtmp = newftmp + sizeof(struct memFooter);
+							struct memFooter* newf = (struct memFooter*)(newftmp + (4 - (newftmp % 4))); //Align
+							struct memHeader* newh = (struct memHeader*)(newhtmp + (4 - (newhtmp % 4))); //Align
 							makeMem(head, newf, false);
 							makeMem(newh, foot, true);
 							return head->address + sizeof(struct memHeader);
