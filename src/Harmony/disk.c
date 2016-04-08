@@ -222,10 +222,10 @@ void hdWriteAbs(void* in, unsigned int loc, unsigned int bytes){
 
 	outb(ATA_IO + IO_CMD, 0x30); //Send write sectors command.
 	unsigned short i;
-	unsigned short b;
+	unsigned int b;
 	for(i = 0; i < sectors; i++){
 		hdWait();
-		for(b = i * 256; b < (256 + (i * 256)); b++){
+		for(b = i * 256; b < (unsigned int)(256 + (i * 256)); b++){
 			//I = sector, B = 2-byte-big data thingies.
 			if(b < bytes){
 				//If less than max.
@@ -261,10 +261,10 @@ void hdReadAbs(void* out, unsigned int loc, unsigned int bytes){
 
 	outb(ATA_IO + IO_CMD, 0x20); //Send read sectors command.
 	unsigned short i;
-	unsigned short b;
+	unsigned int b;
 	for(i = 0; i < sectors; i++){
 		hdWait();
-		for(b = i * 256; b < (256 + (i * 256)); b++){
+		for(b = i * 256; b < (unsigned int)(256 + (i * 256)); b++){
 			//I = sector, B = 2-byte-big data thingies.
 			if(b < bytes){
 				//If less than max.

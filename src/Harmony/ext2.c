@@ -3,7 +3,7 @@
 //True if successful.
 bool setupFS(){
 	struct mbr* masterBoot = (struct mbr*)malloc(sizeof(struct mbr));
-	hdReadAbs(masterBoot, 0x0, sizeof(struct mbr)); //Read the MBR from abs sector 1.
+	hdReadAbs(masterBoot, 0, sizeof(struct mbr)); //Read the MBR from abs sector 1.
 
 	if(!((masterBoot->signature)[0] == 0x55 && (masterBoot->signature)[1] == 0xAA)){
 		fbWrite(hts((unsigned int)masterBoot), RED, BLACK);
