@@ -99,7 +99,6 @@ void* malloc(unsigned int s){
 							struct memHeader* newh = (struct memHeader*)(newhtmp + (4 - (newhtmp % 4))); //Align
 							makeMem(head, newf, false);
 							makeMem(newh, foot, true);
-							fbWrite(hts((unsigned int)head->address), DTCOLOR, BLACK);
 							return (void*)((unsigned int)head->address + sizeof(struct memHeader));
 						}
 					}
