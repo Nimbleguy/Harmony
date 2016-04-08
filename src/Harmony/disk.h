@@ -26,7 +26,7 @@
 #define IO_STATUS 7
 
 //Status register bits.
-#define S_ERR 0x0
+#define S_ERR 0x1
 #define S_DRQ 0x8
 #define S_SRV 0x10
 #define S_DFE 0x20

@@ -36,12 +36,12 @@ while true; do
 						"New")
 							echo "What filename? "
 							read fname
-							nano "$fname"
+							nano -wS "$fname"
 							cd ../..
 							break 2
 							;;
 						*)
-							nano "$opt3"
+							nano -wS "$opt3"
 							cd ../..
 							break 2
 							;;
@@ -160,7 +160,7 @@ while true; do
 			"Dump")
 				mount image
 				i686-elf-objdump -M intel -S -l -D image/boot/Harmony.elf > objdump.txt
-				nano objdump.txt
+				nano -wS objdump.txt
 				rm -f objdump.txt
 				sync
 				read -rsp $'Press any key to continue...\n' -n1 key

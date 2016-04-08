@@ -57,6 +57,21 @@ bool setupHD(){
 			ATA_CR = ATA1_CR;
 			SELOFF = 0x0;
 			fbWrite("P - M\n", DTCOLOR, BLACK);
+			while(inb(ATA_IO + IO_STATUS) & S_BSY){}
+			if(!(inb(ATA_IO + IO_LGAm) == 0) && !(inb(ATA_IO + IO_LGAh) == 0)){
+				bool drq = false;
+				bool err = false;
+				while(!drq || !err){
+					unsigned int x = inb(ATA_IO + IO_STATUS);
+					drq = x & S_DRQ;
+					err = x & S_ERR;
+				}
+				if(!err){
+					for(unsigned short i = 0; i < 256; i++){
+						inb(ATA_IO + IO_DATA);
+					}
+				}
+			}
 		}
 		else{
 			//Nonexistant master. Test slave.
@@ -76,6 +91,22 @@ bool setupHD(){
 				ATA_CR = ATA1_CR;
 				SELOFF = 0x10;
 				fbWrite("P - S\n", DTCOLOR, BLACK);
+				while(inb(ATA_IO + IO_STATUS) & S_BSY){}
+                        	if(!(inb(ATA_IO + IO_LGAm) == 0) && !(inb(ATA_IO + IO_LGAh) == 0)){
+                                	bool drq = false;
+                                	bool err = false;
+                                	while(!drq || !err){
+                                	        unsigned int x = inb(ATA_IO + IO_STATUS);
+                                	        drq = x & S_DRQ;
+                                	        err = x & S_ERR;
+                                	}
+                                	if(!err){
+                                	        for(unsigned short i = 0; i < 256; i++){
+                                	                inb(ATA_IO + IO_DATA);
+                                	        }
+                                	}
+                        	}
+
 			}
 			else{
 				//IDK
@@ -102,6 +133,22 @@ bool setupHD(){
 			ATA_CR = ATA2_CR;
 			SELOFF = 0x0;
 			fbWrite("S - M\n", DTCOLOR, BLACK);
+			while(inb(ATA_IO + IO_STATUS) & S_BSY){}
+                        if(!(inb(ATA_IO + IO_LGAm) == 0) && !(inb(ATA_IO + IO_LGAh) == 0)){
+                                bool drq = false;
+                                bool err = false;
+                                while(!drq || !err){
+                                        unsigned int x = inb(ATA_IO + IO_STATUS);
+                                        drq = x & S_DRQ;
+                                        err = x & S_ERR;
+                                }
+                                if(!err){
+                                        for(unsigned short i = 0; i < 256; i++){
+                                                inb(ATA_IO + IO_DATA);
+                                        }
+                                }
+                        }
+
 		}
 		else{
 			outb(ATA2_IO + IO_DRIVE, 0xB0);
@@ -119,6 +166,22 @@ bool setupHD(){
 				ATA_CR = ATA2_CR;
 				SELOFF = 0x10;
 				fbWrite("S - S\n", DTCOLOR, BLACK);
+				while(inb(ATA_IO + IO_STATUS) & S_BSY){}
+                        	if(!(inb(ATA_IO + IO_LGAm) == 0) && !(inb(ATA_IO + IO_LGAh) == 0)){
+                                	bool drq = false;
+                                	bool err = false;
+                                	while(!drq || !err){
+                                	        unsigned int x = inb(ATA_IO + IO_STATUS);
+                                	        drq = x & S_DRQ;
+                                	        err = x & S_ERR;
+                                	}
+                                	if(!err){
+                                        	for(unsigned short i = 0; i < 256; i++){
+                                        	        inb(ATA_IO + IO_DATA);
+                                        	}
+                                	}
+                        	}
+
 			}
 			else{
 				nodrive = true;
@@ -188,7 +251,7 @@ void hdReadAbs(void* out, unsigned int loc, unsigned int bytes){
 	unsigned int sectors = (bytes + 512 - 1) / 512; //Round up: (A + B - 1)/B
 	unsigned int lma = loc & 0x0FFFFFFF;
 
-	outb(ATA_IO, (0xE0 + SELOFF) | (lma >> 24)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LGA.
+	outb(ATA_IO + IO_DATA, (0xE0 + SELOFF) | ((lma >> 24) & 0x0F)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LGA.
 	outb(ATA_IO + IO_SECCNT, sectors); //Output amount of sectors to read.
 	outb(ATA_IO + IO_LGAl, lma & 0xFF); //Output lower 8 bits of LMA.
 	outb(ATA_IO + IO_LGAm, (lma >> 8) & 0xFF); //Output middle 8 bits of LMA.
