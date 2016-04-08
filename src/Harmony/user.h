@@ -17,7 +17,7 @@ struct memHeader{
 	unsigned int avalible : 1;
 	struct memHeader* address;
 	struct memFooter* foot;
-}__attribute__((packed));
+};
 
 struct memFooter{
 	struct memHeader* head;
@@ -25,7 +25,7 @@ struct memFooter{
         unsigned int avalible : 1;
 	unsigned int magic2;
 	unsigned int magic;
-}__attribute__((packed));
+};
 
 unsigned int heapSize;
 unsigned int memSigH;

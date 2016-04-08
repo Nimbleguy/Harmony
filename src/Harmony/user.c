@@ -64,7 +64,7 @@ void combMem(){
 		}
 	}
 	//Check how far into the heap has been used, and allocate more space if bad things(tm)
-	if(lastHead && (unsigned int)lastHead - (unsigned int)HEAP_START > heapSize - (HEAP_INCR / 4)){
+	if(lastHead && (unsigned int)lastHead - (unsigned int)HEAP_START > heapSize - (HEAP_INCR / 8)){
 		//Allocate more space.
 		allocHeap();
 	}
@@ -89,7 +89,7 @@ void* malloc(unsigned int s){
 					if(storeSize > size){
 						if(storeSize - size - sizeof(struct memHeader) - sizeof(struct memFooter) < 0xFF){ //If it's not worth it to split.
 							head->avalible = false;
-							return head->address + sizeof(struct memHeader);
+							return (void*)((unsigned int)head->address + sizeof(struct memHeader));
 						}
 						else{
 							struct memFooter* foot = head->foot;
@@ -99,12 +99,13 @@ void* malloc(unsigned int s){
 							struct memHeader* newh = (struct memHeader*)(newhtmp + (4 - (newhtmp % 4))); //Align
 							makeMem(head, newf, false);
 							makeMem(newh, foot, true);
-							return head->address + sizeof(struct memHeader);
+							fbWrite(hts((unsigned int)head->address), DTCOLOR, BLACK);
+							return (void*)((unsigned int)head->address + sizeof(struct memHeader));
 						}
 					}
 					else if(storeSize == size){
 						head->avalible = false;
-						return head->address + sizeof(struct memHeader);
+						return (void*)((unsigned int)head->address + sizeof(struct memHeader));
 					}
 				}
 			}
@@ -116,16 +117,15 @@ void* malloc(unsigned int s){
 }
 
 void free(void* addr){
-	struct memHeader* head = (struct memHeader*)(addr - sizeof(struct memHeader));
-	head->avalible = true;
-	head->foot->avalible = true;
+	struct memHeader* head = (struct memHeader*)((unsigned int)addr - sizeof(struct memHeader));
+	makeMem(head->address, head->foot, true);
 	combMem();
 }
 
 void setupUsr(){
 	//Randomize RNG.
 	unsigned int random = rand();
-	for(; (random % 20) == 10; random = rand());
+	for(; !((random % 20) == 10); random = rand());
 
 	//Memory management setup.
 	heapSize = HEAP_INCR;

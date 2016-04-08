@@ -31,7 +31,6 @@ bool setupFS(){
 		free(sb);
 		return false;
 	}
-
 	free(masterBoot);
 	free(sb);
 	return true;
