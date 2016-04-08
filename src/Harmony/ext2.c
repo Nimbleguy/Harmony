@@ -6,7 +6,8 @@ bool setupFS(){
 	hdReadAbs(masterBoot, 0x0, sizeof(struct mbr)); //Read the MBR from abs sector 1.
 
 	if(!((masterBoot->signature)[0] == 0x55 && (masterBoot->signature)[1] == 0xAA)){
-		fbWrite("Invalid MBR!\n", RED, BLACK);
+		fbWrite(hts((unsigned int)masterBoot), RED, BLACK);
+		fbWrite(" Invalid MBR!\n", RED, BLACK);
 		free(masterBoot);
 		return false;
 	}
