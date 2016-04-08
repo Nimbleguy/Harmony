@@ -33,13 +33,17 @@ void kernel_main(struct mbInfo* mb, void* heap) {
 	fbWrite("Loading Hard Drive...\n", DTCOLOR, BLACK);
         //HDD
         if(!setupHD()){
+		#ifndef DONUTCARE
 		loopf();
+		#endif
 	}
 
 	fbWrite("Loading Filesystem...\n", DTCOLOR, BLACK);
         //FS
         if(!setupFS()){
+		#ifndef DONUTCARE
 		loopf();
+		#endif
 	}
 
 	// Make sure screan is clear from junk.

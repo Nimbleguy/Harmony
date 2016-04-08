@@ -1,16 +1,7 @@
 #ifndef COMMONH
 #define COMMONH
 
-//ONLY DEFINE IF DOG
-//#define DOG
-
-#if defined(__linux__)
-#error "You are not using a cross-compiler, you will most certainly run into trouble"
-#endif
-
-#if !defined(__i386__)
-#error "This tutorial needs to be compiled with a ix86-elf compiler"
-#endif
+#define DONUTCARE
 
 typedef unsigned char bool;
 #define true 1
