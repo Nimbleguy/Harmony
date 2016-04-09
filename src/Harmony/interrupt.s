@@ -27,7 +27,7 @@ interruptc:
 
 	; Save registers
 	pushad
-	mov cr2, eax
+	mov eax, cr2
 	push eax
 
 	; Call the C function for this stuff.

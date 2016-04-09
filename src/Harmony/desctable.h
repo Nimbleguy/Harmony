@@ -13,6 +13,7 @@
 #define PIC2_D 0xC00000A1u
 #define PIC_EOI 0x20
 #define KEYBOARD_D 0xC0000060u
+#define GDTSIZE 7
 
 struct gdtPoint {
 	unsigned short size;
@@ -92,7 +93,7 @@ struct tss{
 }__attribute__((packed));
 
 struct gdtPoint gdtpos;
-struct gdtEntry gdt[7];
+struct gdtEntry gdt[GDTSIZE];
 struct idtPoint idtpos;
 struct idtEntry idt[256];
 struct tss tss0;

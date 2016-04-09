@@ -50,75 +50,93 @@ void mkPgTab(unsigned short dir, unsigned short index, bool p, bool rw, bool u, 
 	table[index] = *e;
 }
 
-void mapPage(void* phys, void* virt, bool user, bool size){
-	unsigned short dindex = GETDIR((unsigned int)virt);
-	unsigned short tindex = GETTAB((unsigned int)virt);
+void mapPage(unsigned int phys, unsigned int virt, bool user, bool size){
+	unsigned short dindex = GETDIR(virt);
+	unsigned short tindex = GETTAB(virt);
 	if(size){
-		mkPgDir(dindex, true, true, user, false, false, false, size, 0, (unsigned int)phys & 0xFFF00000);
+		mkPgDir(dindex, true, true, user, false, false, false, size, 0, phys & 0xFFF00000);
 	}
 	else{
-		mkPgDir(dindex, true, true, user, false, false, false, size, 0, 0);
-		mkPgTab(dindex, tindex, true, true, user, false, false, false, false, false, 0, (unsigned int)phys & 0xFFFFF000);
+		if(!(pgDir[dindex].present) || (pgDir[dindex].present && pgDir[dindex].size)){
+			mkPgDir(dindex, true, true, user, false, false, false, size, 0, 0);
+		}
+		mkPgTab(dindex, tindex, true, true, user, false, false, false, false, false, 0, phys & 0xFFFFF000);
 	}
 	invlpgb();
 }
 
 void enablePaging(){
-	unsigned short dstart = GETDIR(0xC0000000);
-	unsigned short tstart = GETTAB(0xC0000000);
+	if(!pagEnabled){
+		unsigned short dstart = GETDIR(0xC0000000);
+		unsigned short tstart = GETTAB(0xC0000000);
 
-	fbWrite(its(dstart), DTCOLOR, BLACK);
-	fbWrite("\n", DTCOLOR, BLACK);
-	fbWrite(its(tstart), DTCOLOR, BLACK);
-	fbWrite("\n", DTCOLOR, BLACK);
+		fbWrite(its(dstart), DTCOLOR, BLACK);
+		fbWrite("\n", DTCOLOR, BLACK);
+		fbWrite(its(tstart), DTCOLOR, BLACK);
+		fbWrite("\n", DTCOLOR, BLACK);
 
-	pgDir = (struct pgDirEntry*)kalloc_al(sizeof(struct pgDirEntry) * 1024);
-	//Clear page directory.
-	struct pgDirEntry* blankDir = (struct pgDirEntry*)kalloc_al(sizeof(struct pgDirEntry));
-	blankDir->present = 0;
-	blankDir->rw = 0;
-	blankDir->usr = 0;
-	blankDir->wcache = 0;
-	blankDir->dcache = 0;
-	blankDir->accessed = 0;
-	blankDir->zero = 0;
-	blankDir->size = 0;
-	blankDir->free = 0;
-	blankDir->table = 0;
+		pgDir = (struct pgDirEntry*)kalloc_al(sizeof(struct pgDirEntry) * 1024);
+		pgDirT = (struct pgDirEntry*)kalloc_al(sizeof(struct pgDirEntry) * 1024);
+		//Clear page directory.
+		struct pgDirEntry* blankDir = (struct pgDirEntry*)kalloc_al(sizeof(struct pgDirEntry));
+		blankDir->present = 0;
+		blankDir->rw = 0;
+		blankDir->usr = 0;
+		blankDir->wcache = 0;
+		blankDir->dcache = 0;
+		blankDir->accessed = 0;
+		blankDir->zero = 0;
+		blankDir->size = 0;
+		blankDir->free = 0;
+		blankDir->table = 0;
 
-	eDir = *((unsigned int*)blankDir);
+		eDir = *((unsigned int*)blankDir);
 
-	unsigned short i;
-	for(i = 0; i < 1024; i++){
-		pgDir[i] = *blankDir;
+		unsigned short i;
+		for(i = 0; i < 1024; i++){
+			pgDir[i] = *blankDir;
+		}
+
+		//Setup blank page tables.
+		struct pgTabEntry* blankTab = (struct pgTabEntry*)kalloc_al(sizeof(struct pgTabEntry));
+	        blankTab->present = 0;
+	        blankTab->rw = 0;
+		blankTab->usr = 0;
+		blankTab->wcache = 0;
+		blankTab->dcache = 0;
+		blankTab->accessed = 0;
+		blankTab->dirty = 0;
+		blankTab->zero = 0;
+		blankTab->global = 0;
+		blankTab->free = 0;
+		blankTab->page = 0;
+
+		eTab = *((unsigned int*)blankTab);
+
+		//Higher Half Page Directory, GRUB, BIOS, and Kernel.
+		mkPgDir(dstart, true, true, false, false, false, false, true, 0, 0x0);
+		//Map heap.
+		mkPgDir(dstart + 1, true, true, true, false, false, false, true, 0, 0x400000);
+		//Recursive page directory.
+		mkPgDir(1024 - 1, true, true, true, false, false, false, false, 0, getPhysInt(pgDir));
+
+		//Enable paging.
+		switchPage();
+		lpagb(getPhysInt(pgDirT));
+		pagEnabled = true;
 	}
-
-	//Setup blank page tables.
-	struct pgTabEntry* blankTab = (struct pgTabEntry*)kalloc_al(sizeof(struct pgTabEntry));
-        blankTab->present = 0;
-        blankTab->rw = 0;
-        blankTab->usr = 0;
-        blankTab->wcache = 0;
-        blankTab->dcache = 0;
-        blankTab->accessed = 0;
-	blankTab->dirty = 0;
-        blankTab->zero = 0;
-	blankTab->global = 0;
-        blankTab->free = 0;
-        blankTab->page = 0;
-
-	eTab = *((unsigned int*)blankTab);
-
-	//Higher Half Page Directory, GRUB, BIOS, and Kernel.
-	mkPgDir(dstart, true, true, false, false, false, false, true, 0, 0x0);
-	//Map heap.
-	mkPgDir(dstart + 1, true, true, true, false, false, false, true, 0, 0x400000);
-	//Recursive page directory.
-	mkPgDir(1024 - 1, true, true, true, false, false, false, false, 0, getPhysInt(pgDir));
-
-	//Enable paging.
-	lpagb(getPhysInt(pgDir));
-	pagEnabled = true;
+	else{
+		unsigned short i;
+		//Higher Half Page Directory, GRUB, BIOS, and Kernel.
+		for(i = 0; i < 1024; i++){
+//			mapPage(0, 0xC0000000, false, false);
+		}
+		//Map heap.
+		for(i = 0; i < 1024; i++){
+			mapPage(0x400000, 0xC0400000, true, false);
+		}
+		switchPage();
+	}
 }
 
 //Get physical address.
@@ -133,4 +151,12 @@ void* getPhys(void* virt){
 	else{
 		return virt - 0xC0000000;
 	}
+}
+
+//Set permanent to tmp.
+void switchPage(){
+	struct pgDirEntry* temp = pgDirT;
+	pgDirT = pgDir;
+	pgDir = temp;
+	memcpy(pgDir, pgDirT, sizeof(struct pgDirEntry) * 1024);
 }

@@ -36,12 +36,14 @@ struct pgTabEntry{
         unsigned int page : 20;
 }__attribute__((packed));
 
-struct pgDirEntry* pgDir;
+struct pgDirEntry* pgDir; //Temp page dir for switching.
+struct pgDirEntry* pgDirT; //True page dir.
 
 bool pagEnabled;
 
 void enablePaging();
 void* getPhys(void* virt);
-void mapPage(void* phys, void* virt, bool user, bool size);
+void mapPage(unsigned int phys, unsigned int virt, bool user, bool size);
+void switchPage();
 
 #endif

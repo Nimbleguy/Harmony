@@ -19,7 +19,7 @@ void makeMem(struct memHeader* head, struct memFooter* foot, bool avalible){
 
 void allocHeap(){
 	//Allocate more memory to heap.
-	mapPage(getPhys(HEAP_START) + heapSize, HEAP_START + heapSize, true, true);
+	mapPage((unsigned int)getPhys(HEAP_START) + heapSize, (unsigned int)HEAP_START + heapSize, true, true);
 	struct memFooter* ofoot = (struct memFooter*)(HEAP_START + heapSize - sizeof(struct memFooter));
 	struct memHeader* bhead = ofoot->head;
 	struct memFooter* nfoot = (struct memFooter*)(HEAP_START + heapSize + HEAP_INCR - sizeof(struct memFooter));
@@ -132,8 +132,8 @@ void setupUsr(){
 	memSigF = rand();
 	memSig = rand();
 	makeMem((struct memHeader*)HEAP_START, (struct memFooter*)(HEAP_START + heapSize - sizeof(struct memFooter)), true);
-	gdtDesc(5, (unsigned int)malloc(HEAP_INCR / 4) + (HEAP_INCR / 4), HEAP_INCR / 4, 0xF6, 0x4F);
 	ltssb();
+	enablePaging(); //Redo tables now that malloc works.
 }
 
 void* memcpy(void* out, void* in, unsigned int bytes){
