@@ -7,7 +7,7 @@
 #include "paging.h"
 #include "terminal.h"
 
-#define HEAP_START (void*)0xC0400000
+#define HEAP_START ((void*)0xC0800000)
 #define HEAP_INCR 0x400000
 
 struct memHeader{

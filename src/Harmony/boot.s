@@ -54,7 +54,7 @@ hloader:
 	; Load page dir
 	mov eax, (tempPgDir - KERN_VIRB)
 	mov cr3, eax
-	
+
 	; Enable 4MB pages
 	mov eax, cr4
 	or eax, 0x00000010
@@ -63,7 +63,7 @@ hloader:
 	mov eax, cr0
 	or eax, 0x80000000
 	mov cr0, eax
-	
+
 	; Jump to true loader.
 	lea eax, [loader]
 	jmp eax

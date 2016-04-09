@@ -175,7 +175,7 @@ void* memmove(void* out, void* in, unsigned int bytes){
 
 
 int rand(){
-	unsigned int n = nrand[0] + nrand[1] + nrand[2] + nrand[3];
+	unsigned int n = (nrand[0] & nrand[1]) + (nrand[2] | nrand[3]);
 	srand(n);
 	return n;
 }

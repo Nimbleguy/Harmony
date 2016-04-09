@@ -9,6 +9,8 @@ global lusrb
 global invlpgb
 global callb
 global ltssb
+global clib
+global stib
 
 extern gdtpos
 extern idtpos
@@ -61,19 +63,19 @@ loopf:
 	jmp loopf
 
 ; Load the page directory
-lpagb:	
+lpagb:
 	; Load new page directory
         mov eax, [esp + 4]
 	mov cr3, eax
 	invlpg [0]
-	
+
 	; Enable paging.
 	mov eax, cr0
 	or eax, 0x80000000
 	mov cr0, eax
 	ret
 
-; Load VGA bitmap.	
+; Load VGA bitmap.
 lvgab:
 	mov esi, [esp + 4]
 	; Clear even/odd mode.
@@ -148,4 +150,11 @@ ltssb:
 	; Set TSS register to segment.
 	mov ax, 0x33
 	ltr ax
+	ret
+
+clib:
+	cli
+	ret
+stib:
+	sti
 	ret

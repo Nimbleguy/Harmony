@@ -259,9 +259,14 @@ char stc(unsigned char c){
 }
 
 void* genkalloc(unsigned int size, bool align, unsigned int* phys){
-	if(frHeap > 0xC0300000){
+	if(((frHeap + size + 0x1000) & 0xFFFFF000) > (unsigned int)HEAP_START){
 		//Infringing on user heap, switch to that.
-		return malloc(size);
+		if(!align){
+			return malloc(size);
+		}
+		else{
+			loopf();
+		}
 	}
 	if(align && (frHeap & 0xFFFFF000)){
 		frHeap &= 0xFFFFF000;

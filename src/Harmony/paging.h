@@ -36,8 +36,7 @@ struct pgTabEntry{
         unsigned int page : 20;
 }__attribute__((packed));
 
-struct pgDirEntry* pgDir; //Temp page dir for switching.
-struct pgDirEntry* pgDirT; //True page dir.
+struct pgDirEntry* pgDir;
 
 bool pagEnabled;
 

@@ -15,5 +15,7 @@ void lusrb(unsigned int i);
 void invlpgb();
 struct genReg callb(unsigned int addr);
 void ltssb();
+void clib();
+void stib();
 
 #endif
