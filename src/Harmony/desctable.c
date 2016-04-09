@@ -13,7 +13,7 @@ void gdtDesc(unsigned int num, unsigned int base, unsigned int limit, unsigned c
 }
 
 void makeGDT(){
-	gdtpos.size = (sizeof(struct gdtEntry) * 7) - 1;
+	gdtpos.size = (sizeof(struct gdtEntry) * GDTSIZE) - 1;
 	gdtpos.ptr = (int) &gdt;
 
 	//Null Descriptor
@@ -26,21 +26,22 @@ void makeGDT(){
         gdtDesc(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
         //User Data
         gdtDesc(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
-	//User Stack Placeholder
-	gdtDesc(5, 0, 0xFFFFFFFF, 0xF2, 0xCF);
 
 	//Task State Segment
-	memset(&tss0, 0, sizeof(struct tss));
-	tss0.ss0 = 0x10;
-	tss0.esp0 = 0;
-	gdtDesc(6, (unsigned int)(&tss0), sizeof(struct tss), 0xE9, 0x0);
+	tss0 = kalloc(sizeof(struct tss));
+	memset(tss0, 0, sizeof(struct tss));
+	tss0->ss0 = 0x10;
+	tss0->esp0 = 0;
+	tss0->cs = 0xB;
+	tss0->ss = 0x13;
+	tss0->ds = 0x13;
+	tss0->es = 0x13;
+	tss0->fs = 0x13;
+	tss0->gs = 0x13;
+	gdtDesc(5, (unsigned int)tss0, (unsigned int)tss0 + sizeof(struct tss), 0xE9, 0x0);
 
 	//Activate Changes!
 	lgdtb();
-}
-
-void setTssStack(void* ptr){
-	tss0.esp0 = (unsigned int)ptr;
 }
 
 void pic(){

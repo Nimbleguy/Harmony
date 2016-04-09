@@ -53,5 +53,5 @@ void kernel_main(struct mbInfo* mb, void* heap) {
 	fbWrite("| Harmony Alpha |\n\n", DTCOLOR, BLACK);
 
 	// User Mode
-//	lusrb(0);
+//	lusrb(0, &(tss0->esp0));
 }

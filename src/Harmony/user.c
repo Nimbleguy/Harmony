@@ -133,7 +133,6 @@ void setupUsr(){
 	memSig = rand();
 	makeMem((struct memHeader*)HEAP_START, (struct memFooter*)(HEAP_START + heapSize - sizeof(struct memFooter)), true);
 	ltssb();
-	enablePaging(); //Redo tables now that malloc works.
 }
 
 void* memcpy(void* out, void* in, unsigned int bytes){

@@ -126,7 +126,9 @@ lusrb:
 	mov fs, ax
 	mov gs, ax
 
-	mov ebx, [esp + 4] ; Setup instruction pointer for push.
+	mov ecx, [esp + 4]
+	mov [ecx], esp
+	mov ebx, [esp + 8] ; Setup instruction pointer for push.
 
 	push 0x2B ; Set stack segment.
 	push 0x100000 ; Push stack pointer, which is new to the stack segment.
@@ -148,7 +150,7 @@ invlpgb:
 
 ltssb:
 	; Set TSS register to segment.
-	mov ax, 0x33
+	mov ax, 0x2B
 	ltr ax
 	ret
 

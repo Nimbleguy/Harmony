@@ -96,12 +96,11 @@ struct gdtPoint gdtpos;
 struct gdtEntry gdt[GDTSIZE];
 struct idtPoint idtpos;
 struct idtEntry idt[256];
-struct tss tss0;
+struct tss* tss0;
 
 void makeGDT();
 void makeIDT();
 void interruptHandle(struct intState s);
 void gdtDesc(unsigned int num, unsigned int base, unsigned int limit, unsigned char access, unsigned char gran);
-void setTssStack(void* ptr);
 
 #endif
