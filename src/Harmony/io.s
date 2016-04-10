@@ -16,25 +16,38 @@ extern gdtpos
 extern idtpos
 extern userStack
 
+%macro startAsm 0
+push ebp
+mov ebp, esp
+%endmacro
+%macro endAsm 0
+mov esp, ebp
+pop ebp
+ret
+%endmacro
+
 section .text
 
 ; Get data from IO from C
 inb:
-	mov dx, [esp + 4]
-	in al, dx
-	ret
+	startAsm
+	mov dx, [ebp + 8]
+	in ax, dx
+	endAsm
 
 ; Send data to IO port from C
 outb:
+	startAsm
 	; Move input into usable registers.
-	mov al, [esp + 8]
-	mov dx, [esp + 4]
+	mov ax, [ebp + 12]
+	mov dx, [ebp + 8]
 	; Output it.
-	out dx, al
-	ret
+	out dx, ax
+	endAsm
 
 ; Load the GDT
 lgdtb:
+	startAsm
 	lgdt [gdtpos]
 	; Set Data Storage registers with GDT offset for data
 	mov ax, 0x10
@@ -48,25 +61,27 @@ lgdtb:
 
 ; Far Jump!
 flushcs:
-	ret
+	endAsm
 
 ; Load the IDT
 lidtb:
+	startAsm
 	cli
-	mov eax, [esp + 4]
+	mov eax, [esp + 8]
 	lidt [eax]
 	sti
-	ret
+	endAsm
 
-; Loop forever
+; Loop forever, don't need to set up ebp becuase this won't exit.
 loopf:
 	hlt
 	jmp loopf
 
 ; Load the page directory
 lpagb:
+	startAsm
 	; Load new page directory
-        mov eax, [esp + 4]
+        mov eax, [esp + 8]
 	mov cr3, eax
 	invlpg [0]
 
@@ -74,11 +89,12 @@ lpagb:
 	mov eax, cr0
 	or eax, 0x80000000
 	mov cr0, eax
-	ret
+	endAsm
 
 ; Load VGA bitmap.
 lvgab:
-	mov esi, [esp + 4]
+	startAsm
+	mov esi, [esp + 8]
 	; Clear even/odd mode.
 	mov dx, 0x3CE
 	mov ax, 5
@@ -115,9 +131,9 @@ lvgab:
 	out dx, ax
 	mov ax, 0xE06
 	out dx, ax
-	ret
+	endAsm
 
-; Load luser mode.
+; Load luser mode. No ebp becuase no return.
 lusrb:
 	cli
 	; Set data segment.
@@ -127,9 +143,9 @@ lusrb:
 	mov fs, ax
 	mov gs, ax
 
-	mov ecx, [esp + 4]
+	mov ecx, [esp + 8]
 	mov [ecx], esp
-	mov ebx, [esp + 8] ; Setup instruction pointer for push.
+	mov ebx, [esp + 12] ; Setup instruction pointer for push.
 
 	push 0x23 ; Set stack segment.
 	push userStack ; Push stack pointer.
@@ -140,24 +156,24 @@ lusrb:
 	push 0x1B ; Push code segment.
 	push ebx ; Push instruction pointer.
 	iret
-.test:
-	cli
-	hlt
-	jmp .test
 
 invlpgb:
+	startAsm
 	invlpg [0]
-	ret
+	endAsm
 
 ltssb:
+	startAsm
 	; Set TSS register to segment.
 	mov ax, 0x2B
 	ltr ax
-	ret
+	endAsm
 
 clib:
+	startAsm
 	cli
-	ret
+	endAsm
 stib:
+	startAsm
 	sti
-	ret
+	endAsm
