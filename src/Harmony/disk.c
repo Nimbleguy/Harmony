@@ -50,28 +50,12 @@ bool setupHD(){
 		outb(ATA1_IO + IO_LGAl, 0x0);
 		outb(ATA1_IO + IO_LGAm, 0x0);
 		outb(ATA1_IO + IO_LGAh, 0x0);
-		outb(ATA1_IO + IO_CMD, 0xEC); //Send identify command.
-		if(inb(ATA1_IO + IO_STATUS) != 0){
+		if(inb(ATA1_IO + IO_STATUS) & S_RDY){
 			//The drive exists.
 			ATA_IO = ATA1_IO;
 			ATA_CR = ATA1_CR;
 			SELOFF = 0x0;
 			fbWrite("P - M\n", DTCOLOR, BLACK);
-			while(inb(ATA_IO + IO_STATUS) & S_BSY){}
-			if(!(inb(ATA_IO + IO_LGAm) == 0) && !(inb(ATA_IO + IO_LGAh) == 0)){
-				bool drq = false;
-				bool err = false;
-				while(!drq || !err){
-					unsigned int x = inb(ATA_IO + IO_STATUS);
-					drq = x & S_DRQ;
-					err = x & S_ERR;
-				}
-				if(!err){
-					for(unsigned short i = 0; i < 256; i++){
-						inb(ATA_IO + IO_DATA);
-					}
-				}
-			}
 		}
 		else{
 			//Nonexistant master. Test slave.
@@ -84,29 +68,12 @@ bool setupHD(){
 			outb(ATA1_IO + IO_SECNUM, 0x0);
 			outb(ATA1_IO + IO_CYLL, 0x0);
 			outb(ATA1_IO + IO_CYLH, 0x0);
-			outb(ATA1_IO + IO_CMD, 0xEC); //Send identify.
-			if(inb(ATA1_IO + IO_STATUS) != 0){
+			if(inb(ATA1_IO + IO_STATUS) & S_RDY){
 				//It exists.
 				ATA_IO = ATA1_IO;
 				ATA_CR = ATA1_CR;
 				SELOFF = 0x10;
 				fbWrite("P - S\n", DTCOLOR, BLACK);
-				while(inb(ATA_IO + IO_STATUS) & S_BSY){}
-                        	if(!(inb(ATA_IO + IO_LGAm) == 0) && !(inb(ATA_IO + IO_LGAh) == 0)){
-                                	bool drq = false;
-                                	bool err = false;
-                                	while(!drq || !err){
-                                	        unsigned int x = inb(ATA_IO + IO_STATUS);
-                                	        drq = x & S_DRQ;
-                                	        err = x & S_ERR;
-                                	}
-                                	if(!err){
-                                	        for(unsigned short i = 0; i < 256; i++){
-                                	                inb(ATA_IO + IO_DATA);
-                                	        }
-                                	}
-                        	}
-
 			}
 			else{
 				//IDK
@@ -127,28 +94,11 @@ bool setupHD(){
 		outb(ATA2_IO + IO_SECNUM, 0x0);
 		outb(ATA2_IO + IO_CYLL, 0x0);
 		outb(ATA2_IO + IO_CYLH, 0x0);
-		outb(ATA2_IO + IO_CMD, 0xEC);
-		if(inb(ATA2_IO + IO_STATUS) != 0){
+		if(inb(ATA2_IO + IO_STATUS) & S_RDY){
 			ATA_IO = ATA2_IO;
 			ATA_CR = ATA2_CR;
 			SELOFF = 0x0;
 			fbWrite("S - M\n", DTCOLOR, BLACK);
-			while(inb(ATA_IO + IO_STATUS) & S_BSY){}
-                        if(!(inb(ATA_IO + IO_LGAm) == 0) && !(inb(ATA_IO + IO_LGAh) == 0)){
-                                bool drq = false;
-                                bool err = false;
-                                while(!drq || !err){
-                                        unsigned int x = inb(ATA_IO + IO_STATUS);
-                                        drq = x & S_DRQ;
-                                        err = x & S_ERR;
-                                }
-                                if(!err){
-                                        for(unsigned short i = 0; i < 256; i++){
-                                                inb(ATA_IO + IO_DATA);
-                                        }
-                                }
-                        }
-
 		}
 		else{
 			outb(ATA2_IO + IO_DRIVE, 0xF0);
@@ -160,28 +110,11 @@ bool setupHD(){
 			outb(ATA2_IO + IO_SECNUM, 0x0);
 			outb(ATA2_IO + IO_CYLL, 0x0);
 			outb(ATA2_IO + IO_CYLH, 0x0);
-			outb(ATA2_IO + IO_CMD, 0xEC);
-			if(inb(ATA2_IO + IO_STATUS) != 0){
+			if(inb(ATA2_IO + IO_STATUS) & S_RDY){
 				ATA_IO = ATA2_IO;
 				ATA_CR = ATA2_CR;
 				SELOFF = 0x10;
 				fbWrite("S - S\n", DTCOLOR, BLACK);
-				while(inb(ATA_IO + IO_STATUS) & S_BSY){}
-                        	if(!(inb(ATA_IO + IO_LGAm) == 0) && !(inb(ATA_IO + IO_LGAh) == 0)){
-                                	bool drq = false;
-                                	bool err = false;
-                                	while(!drq || !err){
-                                	        unsigned int x = inb(ATA_IO + IO_STATUS);
-                                	        drq = x & S_DRQ;
-                                	        err = x & S_ERR;
-                                	}
-                                	if(!err){
-                                        	for(unsigned short i = 0; i < 256; i++){
-                                        	        inb(ATA_IO + IO_DATA);
-                                        	}
-                                	}
-                        	}
-
 			}
 			else{
 				nodrive = true;
@@ -190,7 +123,7 @@ bool setupHD(){
 	}
 	//No drives
 	if(nodrive){
-		fbWrite("No hard drives detected!\n", DTCOLOR, BLACK);
+		fbWrite("No hard drives detected!\n", RED, BLACK);
 		return false;
 	}
 
@@ -212,8 +145,8 @@ void hdWriteAbs(void* in, unsigned int loc, unsigned int bytes){
 	unsigned int sectors = (bytes + 512 - 1) / 512; //Round up: (A + B - 1)/B
 	unsigned int lma = loc & 0x0FFFFFFF;
 
-	outb(ATA_IO + IO_DRIVE, 0xE0 + SELOFF);
-	outb(ATA_IO, (0xE0 + SELOFF) | (lma >> 24)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LGA.
+	outb(ATA_IO + IO_DRIVE, (0xE0 + SELOFF) | (lma >> 24)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LGA.
+	outb(ATA_IO + IO_FEATS, 0); //NULL in case.
 	outb(ATA_IO + IO_SECCNT, sectors); //Output amount of sectors to read.
 	outb(ATA_IO + IO_LGAl, lma & 0xFF); //Output lower 8 bits of LMA.
 	outb(ATA_IO + IO_LGAm, (lma >> 8) & 0xFF); //Output middle 8 bits of LMA.
@@ -234,7 +167,6 @@ void hdWriteAbs(void* in, unsigned int loc, unsigned int bytes){
 			}
 		}
 		nsDelay();
-		inb(ATA_IO + IO_STATUS);
 	}
 	outb(ATA_IO + IO_CMD, 0xE7); //Cache Flush.
 	hdWait();
@@ -253,8 +185,8 @@ void hdReadAbs(void* out, unsigned int loc, unsigned int bytes){
 	unsigned int sectors = (bytes + 512 - 1) / 512; //Round up: (A + B - 1)/B
 	unsigned int lma = loc & 0x0FFFFFFF;
 
-	outb(ATA_IO + IO_DRIVE, 0xE0 + SELOFF);
-	outb(ATA_IO + IO_DATA, (0xE0 + SELOFF) | ((lma >> 24) & 0x0F)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LMA.
+	outb(ATA_IO + IO_DRIVE, (0xE0 + SELOFF) | ((lma >> 24) & 0x0F)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LMA.
+	outb(ATA_IO + IO_FEATS, 0); //NULL in case.
 	outb(ATA_IO + IO_SECCNT, sectors); //Output amount of sectors to read.
 	outb(ATA_IO + IO_LGAl, lma & 0xFF); //Output lower 8 bits of LMA.
 	outb(ATA_IO + IO_LGAm, (lma >> 8) & 0xFF); //Output middle 8 bits of LMA.
@@ -267,13 +199,11 @@ void hdReadAbs(void* out, unsigned int loc, unsigned int bytes){
 	unsigned int s;
 	for(i = 0; i < sectors; i++){
 		hdWait();
-		inb(ATA_IO + IO_STATUS);
 		for(s = i * 256; s < 256 + (s * 256); s++){
 			//I = sector, S = shorts in sector..
 			if(s < bytes / 2){ //Shorts to bytes considered.
 				//If less than max.
 				outs[s] = inb(ATA_IO + IO_DATA); //Input data.
-				fbWrite(hts(outs[s]), GREEN, BLACK);
 			}
 		}
 		nsDelay();
