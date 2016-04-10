@@ -1,7 +1,7 @@
 #ifndef COMMONH
 #define COMMONH
 
-#define DONUTCARE
+//#define DONUTCARE
 
 typedef unsigned char bool;
 #define true 1

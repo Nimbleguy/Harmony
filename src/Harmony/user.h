@@ -31,6 +31,8 @@ unsigned int heapSize;
 unsigned int memSigH;
 unsigned int memSigF;
 unsigned int memSig;
+unsigned int userStack;
+void* usPoint;
 
 void setupUsr();
 void* malloc(unsigned int size);

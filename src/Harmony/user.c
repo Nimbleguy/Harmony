@@ -125,14 +125,19 @@ void setupUsr(){
 	//Randomize RNG.
 	unsigned int random = rand();
 	for(; !((random % 20) == 10); random = rand());
-
 	//Memory management setup.
 	heapSize = HEAP_INCR;
 	memSigH = rand();
 	memSigF = rand();
 	memSig = rand();
 	makeMem((struct memHeader*)HEAP_START, (struct memFooter*)(HEAP_START + heapSize - sizeof(struct memFooter)), true);
+	//TSS setup.
 	ltssb();
+	//Make user stack.
+	usPoint = malloc(0x4000); //Allocate 8KB, with 4KB starting buffer for alignment and 4KB below the first 8KB so that the stack can't escape.
+	unsigned int us = ((unsigned int)usPoint & 0xFFFFF000) + 0x1000; //Page align.
+	mapPage(getPhysInt(us), us, false, false); //User-disallowed page boundery. Note to self: Add checking in page fault handler and, if so, extend stack.
+	userStack = us + 0x2000; //Set the stack start.
 }
 
 void* memcpy(void* out, void* in, unsigned int bytes){

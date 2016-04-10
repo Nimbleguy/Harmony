@@ -14,6 +14,7 @@ global stib
 
 extern gdtpos
 extern idtpos
+extern userStack
 
 section .text
 
@@ -130,8 +131,8 @@ lusrb:
 	mov [ecx], esp
 	mov ebx, [esp + 8] ; Setup instruction pointer for push.
 
-	push 0x2B ; Set stack segment.
-	push 0x100000 ; Push stack pointer, which is new to the stack segment.
+	push 0x23 ; Set stack segment.
+	push userStack ; Push stack pointer.
 	pushf ; Push EFLAGS
 	pop eax ; Enable interrupt flag.
 	or eax, 0x200

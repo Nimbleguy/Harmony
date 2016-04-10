@@ -75,6 +75,12 @@ void mapPage(unsigned int phys, unsigned int virt, bool user, bool size){
 	invlpgb();
 }
 
+void clearPage(unsigned int virt){
+	unsigned int* table = (unsigned int*)(0xFFC00000 + (0x1000 * GETDIR(virt)));
+	table[GETTAB(virt)] = eTab;
+	invlpgb();
+}
+
 void enablePaging(){
 	if(!pagEnabled){
 		pgDir = (struct pgDirEntry*)kalloc_al(sizeof(struct pgDirEntry) * 1024);

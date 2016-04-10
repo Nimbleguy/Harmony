@@ -41,15 +41,15 @@ bool setupHD(){
 	if(inb(ATA1_IO + IO_STATUS) != 0xFF){
 		secondary = false;
 		//Bus has a working drive. Run through the master and slave, identifying them for working order.
-		outb(ATA1_IO + IO_DRIVE, 0xA0); //Select master.
+		outb(ATA1_IO + IO_DRIVE, 0xE0); //Select master.
 		inb(ATA1_IO + IO_STATUS); //400ns delay.
 		inb(ATA1_IO + IO_STATUS); //400ns delay.
 		inb(ATA1_IO + IO_STATUS); //400ns delay.
 		inb(ATA1_IO + IO_STATUS); //400ns delay.
 		outb(ATA1_IO + IO_SECCNT, 0x0); //Reset some ports.
-		outb(ATA1_IO + IO_SECNUM, 0x0);
-		outb(ATA1_IO + IO_CYLL, 0x0);
-		outb(ATA1_IO + IO_CYLH, 0x0);
+		outb(ATA1_IO + IO_LGAl, 0x0);
+		outb(ATA1_IO + IO_LGAm, 0x0);
+		outb(ATA1_IO + IO_LGAh, 0x0);
 		outb(ATA1_IO + IO_CMD, 0xEC); //Send identify command.
 		if(inb(ATA1_IO + IO_STATUS) != 0){
 			//The drive exists.
@@ -75,7 +75,7 @@ bool setupHD(){
 		}
 		else{
 			//Nonexistant master. Test slave.
-			outb(ATA1_IO + IO_DRIVE, 0xB0); //Select slave.
+			outb(ATA1_IO + IO_DRIVE, 0xF0); //Select slave.
 			inb(ATA1_IO + IO_STATUS); //400ns delay.
 			inb(ATA1_IO + IO_STATUS); //400ns delay.
 			inb(ATA1_IO + IO_STATUS); //400ns delay.
@@ -118,7 +118,7 @@ bool setupHD(){
 	if(inb(ATA2_IO + IO_STATUS) != 0xFF && secondary){
 		nodrive = false;
 		//Bus has a working drive. Yada yada yada.
-		outb(ATA2_IO + IO_DRIVE, 0xA0);
+		outb(ATA2_IO + IO_DRIVE, 0xE0);
 		inb(ATA1_IO + IO_STATUS); //400ns delay.
 		inb(ATA1_IO + IO_STATUS); //400ns delay.
 		inb(ATA1_IO + IO_STATUS); //400ns delay.
@@ -151,7 +151,7 @@ bool setupHD(){
 
 		}
 		else{
-			outb(ATA2_IO + IO_DRIVE, 0xB0);
+			outb(ATA2_IO + IO_DRIVE, 0xF0);
 			inb(ATA1_IO + IO_STATUS); //400ns delay.
 			inb(ATA1_IO + IO_STATUS); //400ns delay.
 			inb(ATA1_IO + IO_STATUS); //400ns delay.
@@ -212,6 +212,7 @@ void hdWriteAbs(void* in, unsigned int loc, unsigned int bytes){
 	unsigned int sectors = (bytes + 512 - 1) / 512; //Round up: (A + B - 1)/B
 	unsigned int lma = loc & 0x0FFFFFFF;
 
+	outb(ATA_IO + IO_DRIVE, 0xE0 + SELOFF);
 	outb(ATA_IO, (0xE0 + SELOFF) | (lma >> 24)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LGA.
 	outb(ATA_IO + IO_SECCNT, sectors); //Output amount of sectors to read.
 	outb(ATA_IO + IO_LGAl, lma & 0xFF); //Output lower 8 bits of LMA.
@@ -221,18 +222,19 @@ void hdWriteAbs(void* in, unsigned int loc, unsigned int bytes){
 	unsigned short* ins = (unsigned short*)in; //Make it point to 16 bit thingies.
 
 	outb(ATA_IO + IO_CMD, 0x30); //Send write sectors command.
-	unsigned short i;
-	unsigned int b;
+	unsigned int i;
+	unsigned int s;
 	for(i = 0; i < sectors; i++){
 		hdWait();
-		for(b = i * 256; b < (unsigned int)(256 + (i * 256)); b++){
-			//I = sector, B = 2-byte-big data thingies.
-			if(b < bytes){
+		for(s = i * 256; s < 256 + (i * 256); s++){
+			//I = sector, S = shorts.
+			if(s < bytes / 2){
 				//If less than max.
-				outb(ATA_IO + IO_DATA, ins[b]); //Input data.
+				outb(ATA_IO + IO_DATA, ins[s]); //Input data.
 			}
 		}
 		nsDelay();
+		inb(ATA_IO + IO_STATUS);
 	}
 	outb(ATA_IO + IO_CMD, 0xE7); //Cache Flush.
 	hdWait();
@@ -251,7 +253,8 @@ void hdReadAbs(void* out, unsigned int loc, unsigned int bytes){
 	unsigned int sectors = (bytes + 512 - 1) / 512; //Round up: (A + B - 1)/B
 	unsigned int lma = loc & 0x0FFFFFFF;
 
-	outb(ATA_IO + IO_DATA, (0xE0 + SELOFF) | ((lma >> 24) & 0x0F)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LGA.
+	outb(ATA_IO + IO_DRIVE, 0xE0 + SELOFF);
+	outb(ATA_IO + IO_DATA, (0xE0 + SELOFF) | ((lma >> 24) & 0x0F)); //Send 0xE0 for master, 0xF0 for slave. OR with highest 4 bits of LMA.
 	outb(ATA_IO + IO_SECCNT, sectors); //Output amount of sectors to read.
 	outb(ATA_IO + IO_LGAl, lma & 0xFF); //Output lower 8 bits of LMA.
 	outb(ATA_IO + IO_LGAm, (lma >> 8) & 0xFF); //Output middle 8 bits of LMA.
@@ -260,15 +263,17 @@ void hdReadAbs(void* out, unsigned int loc, unsigned int bytes){
 	unsigned short* outs = (unsigned short*)out;
 
 	outb(ATA_IO + IO_CMD, 0x20); //Send read sectors command.
-	unsigned short i;
-	unsigned int b;
+	unsigned int i;
+	unsigned int s;
 	for(i = 0; i < sectors; i++){
 		hdWait();
-		for(b = i * 256; b < (unsigned int)(256 + (i * 256)); b++){
-			//I = sector, B = 2-byte-big data thingies.
-			if(b < bytes){
+		inb(ATA_IO + IO_STATUS);
+		for(s = i * 256; s < 256 + (s * 256); s++){
+			//I = sector, S = shorts in sector..
+			if(s < bytes / 2){ //Shorts to bytes considered.
 				//If less than max.
-				outs[b] = inb(ATA_IO + IO_DATA); //Input data.
+				outs[s] = inb(ATA_IO + IO_DATA); //Input data.
+				fbWrite(hts(outs[s]), GREEN, BLACK);
 			}
 		}
 		nsDelay();

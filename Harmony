@@ -151,7 +151,7 @@ while true; do
 			"Run")
 				#cp src/Harmony/bochs.cfg bochsrc.txt
 				#bochs -f bochsrc.txt -q
-				qemu-system-i386 -hda Harmony.img -m 1024 -monitor stdio -d cpu_reset
+				qemu-system-i386 -drive file=Harmony.img,index=0,media=disk,if=ide,format=raw -m 1024 -monitor stdio -d cpu_reset
 				sync
 				read -rsp $'Press any key to continue...\n' -n1 key
 				printf "\033c"

@@ -43,6 +43,6 @@ bool pagEnabled;
 void enablePaging();
 void* getPhys(void* virt);
 void mapPage(unsigned int phys, unsigned int virt, bool user, bool size);
-void switchPage();
+void clearPage(unsigned int virt);
 
 #endif
