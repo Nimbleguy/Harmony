@@ -115,7 +115,7 @@ while true; do
 				;;
 			"Git")
 				while true; do
-					optiong=("Commit" "Push" "Pull" "Edit Gitignore" "Back")
+					optiong=("Commit" "Push" "Pull" "Checkout" "Edit Gitignore" "Back")
 					select optg in "${optiong[@]}"
 					do
 						case $optg in
@@ -132,6 +132,14 @@ while true; do
 								;;
 							"Pull")
 								git pull
+								read -rsp $'Press any key to continue...\n' -n1 key
+								break
+								;;
+							"Checkout")
+								echo "Avalible branches: "
+								git show-branch --list
+								read -p $'Checkout: ' co
+								git checkout "$co"
 								read -rsp $'Press any key to continue...\n' -n1 key
 								break
 								;;
