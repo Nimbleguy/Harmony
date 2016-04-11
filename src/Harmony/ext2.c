@@ -4,6 +4,7 @@
 bool setupFS(){
 	struct mbr* masterBoot = (struct mbr*)malloc(sizeof(struct mbr));
 	hdReadAbs(masterBoot, 0, sizeof(struct mbr)); //Read the MBR from abs sector 1.
+	fbWrite("e", GREEN, BLACK);
 
 	if(!((masterBoot->signature)[0] == 0x55 && (masterBoot->signature)[1] == 0xAA)){
 		fbWrite(hts((unsigned int)masterBoot), RED, BLACK);
@@ -24,7 +25,7 @@ bool setupFS(){
 	partEnd = partStart + entry.sectors;
 
 	struct superblock* sb = (struct superblock*)malloc(sizeof(struct superblock));
-	hdRead(sb, 1, sizeof(struct superblock)); //Read the superblock from offset 1024 bytes, which is 1 in LBA.
+	hdRead(sb, 2, sizeof(struct superblock)); //Read the superblock from offset 1024 bytes, which is 2 in LBA.
 
 	if(!(sb->signature == 0xEF53)){
 		fbWrite("Invalid Superblock!\n", RED, BLACK);

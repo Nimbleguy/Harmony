@@ -11,43 +11,32 @@ global callb
 global ltssb
 global clib
 global stib
+global inw
+global outw
 
 extern gdtpos
 extern idtpos
 extern userStack
 
-%macro startAsm 0
-push ebp
-mov ebp, esp
-%endmacro
-%macro endAsm 0
-mov esp, ebp
-pop ebp
-ret
-%endmacro
-
 section .text
 
 ; Get data from IO from C
 inb:
-	startAsm
-	mov dx, [ebp + 8]
-	in ax, dx
-	endAsm
+	mov dx, [esp + 4]
+	in al, dx
+	ret
 
 ; Send data to IO port from C
 outb:
-	startAsm
 	; Move input into usable registers.
-	mov ax, [ebp + 12]
-	mov dx, [ebp + 8]
+	mov al, [esp + 8]
+	mov dx, [esp + 4]
 	; Output it.
-	out dx, ax
-	endAsm
+	out dx, al
+	ret
 
 ; Load the GDT
 lgdtb:
-	startAsm
 	lgdt [gdtpos]
 	; Set Data Storage registers with GDT offset for data
 	mov ax, 0x10
@@ -61,27 +50,25 @@ lgdtb:
 
 ; Far Jump!
 flushcs:
-	endAsm
+	ret
 
 ; Load the IDT
 lidtb:
-	startAsm
 	cli
-	mov eax, [esp + 8]
+	mov eax, [esp + 4]
 	lidt [eax]
 	sti
-	endAsm
+	ret
 
-; Loop forever, don't need to set up ebp becuase this won't exit.
+; Loop forever.
 loopf:
 	hlt
 	jmp loopf
 
 ; Load the page directory
 lpagb:
-	startAsm
 	; Load new page directory
-        mov eax, [esp + 8]
+        mov eax, [esp + 4]
 	mov cr3, eax
 	invlpg [0]
 
@@ -89,12 +76,11 @@ lpagb:
 	mov eax, cr0
 	or eax, 0x80000000
 	mov cr0, eax
-	endAsm
+	ret
 
 ; Load VGA bitmap.
 lvgab:
-	startAsm
-	mov esi, [esp + 8]
+	mov esi, [esp + 4]
 	; Clear even/odd mode.
 	mov dx, 0x3CE
 	mov ax, 5
@@ -131,9 +117,9 @@ lvgab:
 	out dx, ax
 	mov ax, 0xE06
 	out dx, ax
-	endAsm
+	ret
 
-; Load luser mode. No ebp becuase no return.
+; Load luser mode.
 lusrb:
 	cli
 	; Set data segment.
@@ -143,9 +129,9 @@ lusrb:
 	mov fs, ax
 	mov gs, ax
 
-	mov ecx, [esp + 8]
+	mov ecx, [esp + 4]
 	mov [ecx], esp
-	mov ebx, [esp + 12] ; Setup instruction pointer for push.
+	mov ebx, [esp + 8] ; Setup instruction pointer for push.
 
 	push 0x23 ; Set stack segment.
 	push userStack ; Push stack pointer.
@@ -158,22 +144,33 @@ lusrb:
 	iret
 
 invlpgb:
-	startAsm
 	invlpg [0]
-	endAsm
+	ret
 
 ltssb:
-	startAsm
 	; Set TSS register to segment.
 	mov ax, 0x2B
 	ltr ax
-	endAsm
+	ret
 
 clib:
-	startAsm
 	cli
-	endAsm
+	ret
 stib:
-	startAsm
 	sti
-	endAsm
+	ret
+
+; Get data from IO from C
+inw:
+	mov dx, [esp + 4]
+	in ax, dx
+	ret
+
+; Send data to IO port from C
+outw:
+	; Move input into usable registers.
+	mov ax, [esp + 8]
+	mov dx, [esp + 4]
+	; Output it.
+	out dx, ax
+	ret

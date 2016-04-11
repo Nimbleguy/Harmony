@@ -4,8 +4,8 @@
 #include "common.h"
 #include "desctable.h"
 
-unsigned short inb(unsigned short port);
-void outb(unsigned short port, unsigned short data);
+unsigned char inb(unsigned short port);
+void outb(unsigned short port, unsigned char data);
 void lgdtb();
 void lidtb(unsigned int i);
 void loopf();
@@ -17,4 +17,6 @@ struct genReg callb(unsigned int addr);
 void ltssb();
 void clib();
 void stib();
+unsigned short inw(unsigned short port);
+void outw(unsigned short port, unsigned short data);
 #endif

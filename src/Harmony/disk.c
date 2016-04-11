@@ -180,10 +180,10 @@ void hdWriteAbs(void* in, unsigned int loc, unsigned int bytes){
 			//I = sector, S = shorts.
 			if(s < bytes / 2){
 				//If less than max.
-				outb(ATA_IO + IO_DATA, ins[s]); //Input data.
+				outw(ATA_IO + IO_DATA, ins[s]); //Input data.
 			}
 			else{
-				outb(ATA_IO + IO_DATA, 0);
+				outw(ATA_IO + IO_DATA, 0);
 			}
 		}
 		nsDelay();
@@ -222,15 +222,19 @@ void hdReadAbs(void* out, unsigned int loc, unsigned int bytes){
 	unsigned int s;
 	for(i = 0; i < sectors; i++){
 		hdWait();
-		for(s = i * 256; s < 256 + (s * 256); s++){
+		for(s = i * 256; s < 256 + (i * 256); s++){
 			//I = sector, S = shorts in sector..
 			if(s < bytes / 2){ //Shorts to bytes considered.
 				//If less than max.
-				outs[s] = inb(ATA_IO + IO_DATA); //Input data.
+				outs[s] = inw(ATA_IO + IO_DATA); //Input data.
 			}
 			else{
-				inb(ATA_IO + IO_DATA);
+				inw(ATA_IO + IO_DATA);
 			}
+			fbWrite(its(i), DTCOLOR, BLACK);
+			fbWrite(" ", DTCOLOR, BLACK);
+			fbWrite(its(s), DTCOLOR, BLACK);
+			fbWrite("  ", DTCOLOR, BLACK);
 		}
 		nsDelay();
 	}
